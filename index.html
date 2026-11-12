@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corazones Crew - English Quiz</title>
+    <title>Hearts Crew - English Quiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -15,7 +15,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* Prevent body scroll during test */
             padding: 20px;
             color: white;
             position: relative;
@@ -40,7 +40,7 @@
             100% { transform: translateY(-100vh) rotate(360deg); }
         }
 
-        /* Logo Corazones Crew */
+        /* Logo Hearts Crew */
         .crew-badge {
             position: fixed;
             top: 20px; left: 20px;
@@ -241,7 +241,7 @@
         .btn-review { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
         .btn-restart { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* Sección de revisión */
+        /* Sección de revisión en Interfaz */
         .review-section { text-align: left; margin-top: 25px; max-height: 450px; overflow-y: auto; padding-right: 10px; padding-bottom: 20px; }
         .review-section::-webkit-scrollbar { width: 6px; }
         .review-section::-webkit-scrollbar-thumb { background: #ff6b81; border-radius: 10px; }
@@ -260,16 +260,23 @@
         .review-answer.correct-answer { color: #2ecc71; }
         .review-answer.explanation { color: #ffd700; font-style: italic; margin-top: 6px; }
 
-        /* Área de captura */
-        #captureArea {
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 20px;
-            margin-top: 20px;
-        }
-
         .hidden { display: none !important; }
         
+        /* Contenedor Oculto para la Imagen Exportada */
+        .export-container {
+            position: absolute;
+            left: -9999px; /* Oculto de la vista del usuario */
+            top: 0;
+            width: 700px; /* Ancho fijo para mantener formato al descargar */
+            background: #1e1e2f;
+            padding: 40px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 20px;
+            box-sizing: border-box;
+            z-index: -1;
+        }
+
         /* Confeti */
         .heart-particle { position: fixed; font-size: 2rem; pointer-events: none; z-index: 999; animation: fall 2s linear forwards; }
         @keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
@@ -290,7 +297,7 @@
 <div class="bg-particles" id="particles"></div>
 
 <!-- Logo -->
-<div class="crew-badge">❤️ Corazones Crew</div>
+<div class="crew-badge">❤️ Hearts Crew</div>
 
 <!-- Botón de salir -->
 <button class="exit-btn" id="exitBtn" onclick="exitQuiz()">✕ Salir</button>
@@ -299,7 +306,7 @@
 
     <!-- PANTALLA DE BIENVENIDA -->
     <div class="screen active" id="welcomeScreen">
-        <h1 class="welcome-title">Corazones Crew</h1>
+        <h1 class="welcome-title">Hearts Crew</h1>
         <input type="text" class="name-input" id="playerNameInput" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
         <br>
         <button class="start-btn" onclick="startQuiz()">Empezar</button>
@@ -326,20 +333,12 @@
     <!-- PANTALLA DE RESULTADOS -->
     <div class="screen" id="resultScreen">
         
-        <!-- Bloque principal de resultados (puntaje) -->
+        <!-- Bloque principal de resultados -->
         <div id="resultMain">
             <h2>¡Test Completado! 🎉</h2>
             <div class="score-display" id="finalScore">0<span>/8</span></div>
             <p class="result-message" id="resultMessage"></p>
             <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 15px;" id="playerGreeting"></p>
-        </div>
-
-        <!-- Área de captura para imagen -->
-        <div id="captureArea" style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: 20px; margin-top: 10px;">
-            <h3 style="color: #ff6b81; font-size: 1.1rem;">Corazones Crew</h3>
-            <p style="font-size: 1rem;"><strong id="captureName">Jugador</strong></p>
-            <p style="font-size: 1.3rem;">Puntuación: <strong id="captureScore">0/8</strong></p>
-            <p style="font-size: 0.85rem; opacity: 0.7;">¡He completado el reto de inglés!</p>
         </div>
 
         <!-- Botones de acción -->
@@ -349,13 +348,22 @@
             <button class="btn-action btn-restart" onclick="restartQuiz()">🔄 Reintentar</button>
         </div>
 
-        <!-- Sección de revisión (oculta por defecto) -->
+        <!-- Sección de revisión visible en la app -->
         <div id="reviewSection" class="review-section hidden">
             <h3 style="color: #ff6b81; margin-bottom: 15px; text-align: center;">📋 Revisión de Respuestas</h3>
             <div id="reviewList"></div>
         </div>
     </div>
+</div>
 
+<!-- CONTENEDOR OCULTO PARA EXPORTAR LA IMAGEN COMPLETA -->
+<div id="exportContainer" class="export-container">
+    <h2 style="text-align: center; color: #ff6b81; font-size: 2.2rem; margin-bottom: 10px;">Hearts Crew</h2>
+    <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1);">
+        <p style="font-size: 1.3rem;">Jugador: <strong id="exportName"></strong></p>
+        <p style="font-size: 1.6rem; color: white;">Puntuación: <strong id="exportScore" style="color: #ffd700;"></strong></p>
+    </div>
+    <div id="exportReviewList" style="text-align: left;"></div>
 </div>
 
 <script>
@@ -444,12 +452,9 @@
     const finalScore = document.getElementById('finalScore');
     const resultMessage = document.getElementById('resultMessage');
     const playerGreeting = document.getElementById('playerGreeting');
-    const captureName = document.getElementById('captureName');
-    const captureScore = document.getElementById('captureScore');
     const reviewSection = document.getElementById('reviewSection');
     const reviewList = document.getElementById('reviewList');
     const resultMain = document.getElementById('resultMain');
-    const captureArea = document.getElementById('captureArea');
     const actionButtons = document.getElementById('actionButtons');
 
     // 2. Generar partículas de fondo
@@ -679,20 +684,15 @@
         showScreen(resultScreen);
         progressFill.style.width = '100%';
         
-        // Asegurar que todo esté visible al mostrar resultados
         resultMain.classList.remove('hidden');
-        captureArea.classList.remove('hidden');
         actionButtons.classList.remove('hidden');
         reviewSection.classList.add('hidden');
         
-        // Eliminar botón de volver si existe
         const existingBackBtn = document.getElementById('backToResultsBtn');
         if (existingBackBtn) existingBackBtn.remove();
         
         const total = questions.length;
         finalScore.innerHTML = `${score}<span>/${total}</span>`;
-        captureScore.textContent = `${score}/${total}`;
-        captureName.textContent = playerName;
         playerGreeting.textContent = `${playerName}, este es tu resultado:`;
         
         const percentage = (score / total) * 100;
@@ -703,7 +703,9 @@
         
         resultMessage.textContent = msg;
         
-        // Construir revisión
+        // ------------------------------------------------------------
+        // PREPARAR DATOS PARA LA INTERFAZ VISUAL
+        // ------------------------------------------------------------
         reviewList.innerHTML = '';
         userAnswers.forEach((ans, idx) => {
             const div = document.createElement('div');
@@ -716,22 +718,49 @@
             `;
             reviewList.appendChild(div);
         });
+
+        // ------------------------------------------------------------
+        // PREPARAR DATOS PARA EL CONTENEDOR OCULTO (LA IMAGEN)
+        // ------------------------------------------------------------
+        document.getElementById('exportName').textContent = playerName;
+        document.getElementById('exportScore').textContent = `${score}/${total}`;
         
-        localStorage.setItem('corazonesCrewLastScore', JSON.stringify({ 
+        const exportReviewList = document.getElementById('exportReviewList');
+        exportReviewList.innerHTML = ''; // Limpiar data previa
+        
+        userAnswers.forEach((ans, idx) => {
+            const isCorrect = ans.isCorrect;
+            const borderColor = isCorrect ? '#2ecc71' : '#e74c3c';
+            
+            const div = document.createElement('div');
+            // Usamos estilos inline para que html2canvas los renderice perfecto
+            div.style.background = 'rgba(255,255,255,0.05)';
+            div.style.borderRadius = '15px';
+            div.style.padding = '15px';
+            div.style.marginBottom = '12px';
+            div.style.borderLeft = `5px solid ${borderColor}`;
+            
+            div.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 5px; font-size: 1.05rem;">${idx + 1}. ${ans.question}</div>
+                <div style="font-size: 0.95rem; color: #ff6b81; margin-bottom: 2px;"><b>Tu respuesta:</b> ${ans.userAnswer}</div>
+                ${!isCorrect ? `<div style="font-size: 0.95rem; color: #2ecc71; margin-bottom: 2px;"><b>Respuesta correcta:</b> ${ans.correctAnswer}</div>` : ''}
+                ${ans.explanation ? `<div style="font-size: 0.85rem; color: #ffd700; font-style: italic; margin-top: 5px;">💡 ${ans.explanation}</div>` : ''}
+            `;
+            exportReviewList.appendChild(div);
+        });
+        
+        localStorage.setItem('heartsCrewLastScore', JSON.stringify({ 
             name: playerName, score, total, date: new Date().toISOString() 
         }));
     }
 
-    // 12. Toggle revisión (oculta/muestra bloques)
+    // 12. Toggle revisión en la interfaz
     function toggleReview() {
         if (reviewSection.classList.contains('hidden')) {
-            // Mostrar revisión, ocultar el resto
             reviewSection.classList.remove('hidden');
             resultMain.classList.add('hidden');
-            captureArea.classList.add('hidden');
             actionButtons.classList.add('hidden');
             
-            // Agregar botón de volver si no existe
             if (!document.getElementById('backToResultsBtn')) {
                 const backBtn = document.createElement('button');
                 backBtn.id = 'backToResultsBtn';
@@ -744,30 +773,31 @@
                 backBtn.onclick = toggleReview;
                 reviewSection.appendChild(backBtn);
             }
-            
             reviewSection.scrollIntoView({ behavior: 'smooth' });
         } else {
-            // Ocultar revisión, mostrar el resto
             reviewSection.classList.add('hidden');
             resultMain.classList.remove('hidden');
-            captureArea.classList.remove('hidden');
             actionButtons.classList.remove('hidden');
             
-            // Eliminar botón de volver
             const backBtn = document.getElementById('backToResultsBtn');
             if (backBtn) backBtn.remove();
         }
     }
 
-    // 13. Descargar imagen
+    // 13. Descargar imagen (Ahora captura el contenedor oculto con toda la info)
     function downloadImage() {
-        html2canvas(captureArea, {
+        const exportContainer = document.getElementById('exportContainer');
+        
+        // Evitar que el scroll del usuario corte la imagen oculta
+        window.scrollTo(0,0);
+        
+        html2canvas(exportContainer, {
             backgroundColor: '#1e1e2f',
-            scale: 2,
+            scale: 2, // Más calidad
             useCORS: true
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `corazones-crew-${playerName}-${score}.png`;
+            link.download = `hearts-crew-${playerName}-${score}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
@@ -775,13 +805,11 @@
 
     // 14. Reiniciar
     function restartQuiz() {
-        // Eliminar botón de volver si existe
         const backBtn = document.getElementById('backToResultsBtn');
         if (backBtn) backBtn.remove();
         
         reviewSection.classList.add('hidden');
         resultMain.classList.remove('hidden');
-        captureArea.classList.remove('hidden');
         actionButtons.classList.remove('hidden');
         
         showScreen(welcomeScreen);
