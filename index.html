@@ -15,7 +15,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Prevent body scroll during test */
+            overflow: hidden;
             padding: 20px;
             color: white;
             position: relative;
@@ -153,11 +153,12 @@
         .wildcard-btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
 
         .question-text {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 30px;
             min-height: 3rem;
-            line-height: 1.4;
+            line-height: 1.5;
+            white-space: pre-line; /* Permite saltos de línea naturales */
         }
 
         .options-grid { display: flex; flex-direction: column; gap: 15px; perspective: 1000px; }
@@ -254,7 +255,7 @@
         }
         .review-item.correct { border-left-color: #2ecc71; }
         .review-item.wrong { border-left-color: #e74c3c; }
-        .review-question { font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+        .review-question { font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; white-space: pre-line; }
         .review-answer { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
         .review-answer.user-answer { color: #ff6b81; }
         .review-answer.correct-answer { color: #2ecc71; }
@@ -265,9 +266,9 @@
         /* Contenedor Oculto para la Imagen Exportada */
         .export-container {
             position: absolute;
-            left: -9999px; /* Oculto de la vista del usuario */
+            left: -9999px; /* Oculto de la vista */
             top: 0;
-            width: 700px; /* Ancho fijo para mantener formato al descargar */
+            width: 700px;
             background: #1e1e2f;
             padding: 40px;
             color: white;
@@ -336,7 +337,7 @@
         <!-- Bloque principal de resultados -->
         <div id="resultMain">
             <h2>¡Test Completado! 🎉</h2>
-            <div class="score-display" id="finalScore">0<span>/8</span></div>
+            <div class="score-display" id="finalScore">0<span>/7</span></div>
             <p class="result-message" id="resultMessage"></p>
             <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 15px;" id="playerGreeting"></p>
         </div>
@@ -367,21 +368,21 @@
 </div>
 
 <script>
-    // 1. Banco de preguntas con explicaciones
+    // 1. Banco de preguntas exacto (7 Preguntas)
     const questions = [
         {
             type: 'mc',
             question: "Make it negative. ❌ They play basketball.",
             options: ["They don't playing basketball", "They aren't play basketball.", "They don't play basketball."],
             correct: 2,
-            explanation: "Para negar en presente simple con 'they', usamos 'don't' + verbo base: 'They don't play basketball.'"
+            explanation: "Para negar en presente simple con 'they', usamos 'don't' + verbo base."
         },
         {
             type: 'mc',
             question: "___ you like playing chess?",
             options: ["Are", "Do", "Is"],
             correct: 1,
-            explanation: "Para preguntas en presente simple con 'you', usamos el auxiliar 'Do': 'Do you like...?'"
+            explanation: "Para preguntas en presente simple con 'you', usamos el auxiliar 'Do'."
         },
         {
             type: 'mc',
@@ -395,36 +396,29 @@
             question: "I play chess on some weekends. I ___ play chess.",
             options: ["sometimes", "always", "never"],
             correct: 0,
-            explanation: "'On some weekends' indica una frecuencia ocasional, por lo que 'sometimes' es el adverbio adecuado."
+            explanation: "'On some weekends' indica una frecuencia ocasional, por lo que usamos 'sometimes'."
         },
         {
             type: 'mc',
             question: "I don't play tennis at all. I ___ play tennis.",
             options: ["often", "never", "sometimes"],
             correct: 1,
-            explanation: "'At all' indica frecuencia cero, por lo que 'never' es el adverbio correcto."
+            explanation: "'At all' indica frecuencia cero, por lo que 'never' es correcto."
         },
         {
-            type: 'mc',
+            type: 'write',
             question: "Make it negative. I play tennis.",
-            options: ["I don't play tennis.", "I not play tennis.", "I am not play tennis."],
-            correct: 0,
-            explanation: "La negación en presente simple para 'I' es 'I don't' + verbo base."
+            answers: ["i don't play tennis", "i do not play tennis", "i don't play tennis.", "i do not play tennis."],
+            hint: "Escribe la oración completa usando don't o do not",
+            explanation: "La negación correcta para 'I' es 'I don't play tennis'."
         },
         {
             type: 'write',
-            question: "Escribe la respuesta negativa correcta para: 'I play tennis.' (Usa la contracción)",
-            answers: ["i don't play tennis", "i do not play tennis"],
-            hint: "Recuerda usar 'don't'.",
-            explanation: "La forma correcta es 'I don't play tennis.' o 'I do not play tennis.'"
-        },
-        {
-            type: 'write',
-            question: "Completa: 'What's your favorite hobby?' - 'My favorite hobby is...'",
+            question: "“What’s your favorite hobby?”\n\nStart with “My favorite hobby is…”\nExample: “My favorite hobby is taking photos.”\nThen write one sentence about a different activity you like, love or hate.",
             answers: ["my favorite hobby is"],
-            hint: "Escribe 'My favorite hobby is' seguido de tu pasatiempo.",
+            hint: "Ej: My favorite hobby is taking photos. I hate running.",
             isOpenEnded: true,
-            explanation: "La estructura correcta comienza con 'My favorite hobby is...' seguido de la actividad."
+            explanation: "Debías empezar tu respuesta con 'My favorite hobby is...' y añadir una segunda oración sobre otra actividad."
         }
     ];
 
@@ -505,7 +499,7 @@
         const q = questions[currentIndex];
         
         progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
-        questionText.textContent = q.question;
+        questionText.textContent = q.question; // Renderiza los saltos de línea automáticamente
         optionsContainer.innerHTML = '';
         textInputArea.classList.add('hidden');
         nextBtn.classList.remove('show');
@@ -594,12 +588,12 @@
 
             answerConfirmed = true;
             let isCorrect = false;
-            const lowerAnswer = userAnswer.toLowerCase();
+            const lowerAnswer = userAnswer.toLowerCase().trim();
 
             if (q.isOpenEnded) {
                 isCorrect = lowerAnswer.startsWith(q.answers[0]);
             } else {
-                isCorrect = q.answers.some(ans => lowerAnswer === ans.toLowerCase());
+                isCorrect = q.answers.some(ans => lowerAnswer === ans);
             }
 
             textInput.disabled = true;
@@ -616,7 +610,7 @@
             userAnswers.push({
                 question: q.question,
                 userAnswer: userAnswer || "(vacío)",
-                correctAnswer: q.isOpenEnded ? "My favorite hobby is..." : q.answers[0],
+                correctAnswer: q.isOpenEnded ? "La oración debe empezar con: 'My favorite hobby is...'" : q.answers[0],
                 isCorrect: isCorrect,
                 explanation: q.explanation
             });
@@ -733,15 +727,17 @@
             const borderColor = isCorrect ? '#2ecc71' : '#e74c3c';
             
             const div = document.createElement('div');
-            // Usamos estilos inline para que html2canvas los renderice perfecto
             div.style.background = 'rgba(255,255,255,0.05)';
             div.style.borderRadius = '15px';
             div.style.padding = '15px';
             div.style.marginBottom = '12px';
             div.style.borderLeft = `5px solid ${borderColor}`;
             
+            // Reemplazamos saltos de línea (\n) con <br> para que se vean bien en la exportación
+            const formattedQuestion = ans.question.replace(/\n/g, '<br>');
+
             div.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 5px; font-size: 1.05rem;">${idx + 1}. ${ans.question}</div>
+                <div style="font-weight: 600; margin-bottom: 5px; font-size: 1.05rem;">${idx + 1}. ${formattedQuestion}</div>
                 <div style="font-size: 0.95rem; color: #ff6b81; margin-bottom: 2px;"><b>Tu respuesta:</b> ${ans.userAnswer}</div>
                 ${!isCorrect ? `<div style="font-size: 0.95rem; color: #2ecc71; margin-bottom: 2px;"><b>Respuesta correcta:</b> ${ans.correctAnswer}</div>` : ''}
                 ${ans.explanation ? `<div style="font-size: 0.85rem; color: #ffd700; font-style: italic; margin-top: 5px;">💡 ${ans.explanation}</div>` : ''}
@@ -784,16 +780,16 @@
         }
     }
 
-    // 13. Descargar imagen (Ahora captura el contenedor oculto con toda la info)
+    // 13. Descargar imagen
     function downloadImage() {
         const exportContainer = document.getElementById('exportContainer');
         
-        // Evitar que el scroll del usuario corte la imagen oculta
+        // Evitar que el scroll corte la imagen
         window.scrollTo(0,0);
         
         html2canvas(exportContainer, {
             backgroundColor: '#1e1e2f',
-            scale: 2, // Más calidad
+            scale: 2,
             useCORS: true
         }).then(canvas => {
             const link = document.createElement('a');
