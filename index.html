@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corazones Crew - English Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a4a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 20px;
+            color: white;
+            position: relative;
+        }
+
+        /* Fondo animado con partículas */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.08;
+            animation: floatParticle 15s infinite linear;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        /* Logo Corazones Crew */
+        .crew-badge {
+            position: fixed;
+            top: 20px; left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #ff6b81;
+            border: 1px solid rgba(255, 107, 129, 0.3);
+            display: flex; align-items: center; gap: 8px;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Botón de salir */
+        .exit-btn {
+            position: fixed;
+            top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        .exit-btn:hover { background: rgba(255, 100, 100, 0.3); border-color: #ff6b81; }
+
+        /* Contenedor principal */
+        .quiz-container {
+            background: rgba(30, 30, 50, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            animation: fadeIn 0.5s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .quiz-container::-webkit-scrollbar { width: 6px; }
+        .quiz-container::-webkit-scrollbar-thumb { background: #ff6b81; border-radius: 10px; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Pantallas */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Bienvenida */
+        .welcome-title { font-size: 2.8rem; font-weight: 800; margin-bottom: 30px; color: #ff6b81; letter-spacing: -1px; }
+        .name-input {
+            padding: 18px 25px;
+            border-radius: 50px;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            outline: none;
+            width: 80%;
+            max-width: 350px;
+            margin-bottom: 20px;
+            transition: border 0.3s;
+        }
+        .name-input:focus { border-color: #ff6b81; }
+        .name-input::placeholder { color: rgba(255,255,255,0.4); }
+        .start-btn {
+            padding: 18px 60px;
+            background: linear-gradient(135deg, #ff6b81, #ff4757);
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(255, 107, 129, 0.4);
+        }
+        .start-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 35px rgba(255, 107, 129, 0.6); }
+
+        /* Barra de progreso y comodín */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .progress-container { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-right: 15px; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6b81, #ff4757); border-radius: 10px; transition: width 0.4s ease; }
+        
+        .wildcard-btn {
+            background: rgba(255, 107, 129, 0.2);
+            border: 1px solid #ff6b81;
+            color: #ff6b81;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .wildcard-btn:hover:not(:disabled) { background: #ff6b81; color: white; transform: scale(1.05); }
+        .wildcard-btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            min-height: 3rem;
+            line-height: 1.4;
+        }
+
+        .options-grid { display: flex; flex-direction: column; gap: 15px; perspective: 1000px; }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+            text-align: left;
+            padding-left: 30px;
+        }
+        .option-btn:nth-child(1) { animation-delay: 0s; }
+        .option-btn:nth-child(2) { animation-delay: 0.4s; }
+        .option-btn:nth-child(3) { animation-delay: 0.8s; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .option-btn:hover:not(.disabled):not(.locked) {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #ff6b81;
+        }
+
+        .option-btn.selected {
+            background: rgba(255, 107, 129, 0.3) !important;
+            border-color: #ff6b81 !important;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 107, 129, 0.5);
+        }
+        .option-btn.locked { pointer-events: none; }
+        .option-btn.correct { background: #2ecc71 !important; color: white; border-color: #2ecc71; box-shadow: 0 0 20px #2ecc71; animation: pop 0.4s ease; }
+        .option-btn.wrong { background: #e74c3c !important; color: white; border-color: #e74c3c; animation: shake 0.5s ease; }
+        .option-btn.eliminated { opacity: 0.2; pointer-events: none; text-decoration: line-through; filter: grayscale(1); }
+
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
+
+        /* Input de texto */
+        .text-input-area { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .text-input {
+            padding: 18px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .text-input:focus { border-color: #ff6b81; background: rgba(0,0,0,0.4); }
+        .text-input::placeholder { color: rgba(255,255,255,0.4); }
+        .text-input.locked { pointer-events: none; }
+        .text-input.correct-input { border-color: #2ecc71 !important; box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
+        .text-input.wrong-input { border-color: #e74c3c !important; box-shadow: 0 0 15px rgba(231, 76, 60, 0.5); }
+
+        .next-btn {
+            margin-top: 25px; padding: 15px 40px; background: #ff6b81; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 800; color: white; cursor: pointer; opacity: 0; transform: translateY(20px); transition: all 0.3s; pointer-events: none; box-shadow: 0 5px 15px rgba(255, 107, 129, 0.4);
+        }
+        .next-btn.show { opacity: 1; transform: translateY(0); pointer-events: all; }
+        .next-btn:hover { transform: scale(1.05); background: #ff4757; }
+
+        /* Resultados */
+        .result-screen h2 { font-size: 2rem; margin-bottom: 10px; color: #ff6b81; }
+        .score-display { font-size: 4rem; font-weight: 800; margin: 20px 0; text-shadow: 0 0 30px rgba(255, 107, 129, 0.5); }
+        .score-display span { font-size: 1.5rem; opacity: 0.7; }
+        .result-message { font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-bottom: 20px; }
+        
+        .action-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 25px; flex-wrap: wrap; }
+        .btn-action { padding: 14px 28px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .btn-action:hover { transform: scale(1.05); }
+        .btn-download { background: #ffd700; color: #333; }
+        .btn-review { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-restart { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* Sección de revisión */
+        .review-section { text-align: left; margin-top: 25px; max-height: 450px; overflow-y: auto; padding-right: 10px; padding-bottom: 20px; }
+        .review-section::-webkit-scrollbar { width: 6px; }
+        .review-section::-webkit-scrollbar-thumb { background: #ff6b81; border-radius: 10px; }
+        .review-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #ff6b81;
+        }
+        .review-item.correct { border-left-color: #2ecc71; }
+        .review-item.wrong { border-left-color: #e74c3c; }
+        .review-question { font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+        .review-answer { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+        .review-answer.user-answer { color: #ff6b81; }
+        .review-answer.correct-answer { color: #2ecc71; }
+        .review-answer.explanation { color: #ffd700; font-style: italic; margin-top: 6px; }
+
+        /* Área de captura */
+        #captureArea {
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Confeti */
+        .heart-particle { position: fixed; font-size: 2rem; pointer-events: none; z-index: 999; animation: fall 2s linear forwards; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .quiz-container { padding: 25px; }
+            .question-text { font-size: 1.1rem; }
+            .welcome-title { font-size: 2rem; }
+            .score-display { font-size: 3rem; }
+            .btn-action { padding: 12px 18px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Fondo de partículas -->
+<div class="bg-particles" id="particles"></div>
+
+<!-- Logo -->
+<div class="crew-badge">❤️ Corazones Crew</div>
+
+<!-- Botón de salir -->
+<button class="exit-btn" id="exitBtn" onclick="exitQuiz()">✕ Salir</button>
+
+<div class="quiz-container" id="quizContainer">
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div class="screen active" id="welcomeScreen">
+        <h1 class="welcome-title">Corazones Crew</h1>
+        <input type="text" class="name-input" id="playerNameInput" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
+        <br>
+        <button class="start-btn" onclick="startQuiz()">Empezar</button>
+    </div>
+
+    <!-- PANTALLA DEL QUIZ -->
+    <div class="screen" id="quizScreen">
+        <div class="top-bar">
+            <div class="progress-container"><div class="progress-fill" id="progressFill"></div></div>
+            <button class="wildcard-btn" id="wildcardBtn" onclick="useWildcard()">❤️ Comodín</button>
+        </div>
+
+        <div class="question-text" id="questionText">Cargando...</div>
+        
+        <div class="options-grid" id="optionsContainer"></div>
+        
+        <div class="text-input-area hidden" id="textInputArea">
+            <input type="text" class="text-input" id="textInput" placeholder="Escribe tu respuesta aquí..." autocomplete="off">
+        </div>
+
+        <button class="next-btn" id="nextBtn" onclick="confirmAnswer()">Continuar ➡</button>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS -->
+    <div class="screen" id="resultScreen">
+        
+        <!-- Bloque principal de resultados (puntaje) -->
+        <div id="resultMain">
+            <h2>¡Test Completado! 🎉</h2>
+            <div class="score-display" id="finalScore">0<span>/8</span></div>
+            <p class="result-message" id="resultMessage"></p>
+            <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 15px;" id="playerGreeting"></p>
+        </div>
+
+        <!-- Área de captura para imagen -->
+        <div id="captureArea" style="padding: 20px; background: rgba(0,0,0,0.2); border-radius: 20px; margin-top: 10px;">
+            <h3 style="color: #ff6b81; font-size: 1.1rem;">Corazones Crew</h3>
+            <p style="font-size: 1rem;"><strong id="captureName">Jugador</strong></p>
+            <p style="font-size: 1.3rem;">Puntuación: <strong id="captureScore">0/8</strong></p>
+            <p style="font-size: 0.85rem; opacity: 0.7;">¡He completado el reto de inglés!</p>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons" id="actionButtons">
+            <button class="btn-action btn-download" onclick="downloadImage()">📸 Guardar Recuerdo</button>
+            <button class="btn-action btn-review" onclick="toggleReview()">📋 Revisar Respuestas</button>
+            <button class="btn-action btn-restart" onclick="restartQuiz()">🔄 Reintentar</button>
+        </div>
+
+        <!-- Sección de revisión (oculta por defecto) -->
+        <div id="reviewSection" class="review-section hidden">
+            <h3 style="color: #ff6b81; margin-bottom: 15px; text-align: center;">📋 Revisión de Respuestas</h3>
+            <div id="reviewList"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Banco de preguntas con explicaciones
+    const questions = [
+        {
+            type: 'mc',
+            question: "Make it negative. ❌ They play basketball.",
+            options: ["They don't playing basketball", "They aren't play basketball.", "They don't play basketball."],
+            correct: 2,
+            explanation: "Para negar en presente simple con 'they', usamos 'don't' + verbo base: 'They don't play basketball.'"
+        },
+        {
+            type: 'mc',
+            question: "___ you like playing chess?",
+            options: ["Are", "Do", "Is"],
+            correct: 1,
+            explanation: "Para preguntas en presente simple con 'you', usamos el auxiliar 'Do': 'Do you like...?'"
+        },
+        {
+            type: 'mc',
+            question: "I play tennis every day. I ___ play tennis.",
+            options: ["sometimes", "always", "never"],
+            correct: 1,
+            explanation: "'Every day' indica frecuencia del 100%, por lo que el adverbio correcto es 'always'."
+        },
+        {
+            type: 'mc',
+            question: "I play chess on some weekends. I ___ play chess.",
+            options: ["sometimes", "always", "never"],
+            correct: 0,
+            explanation: "'On some weekends' indica una frecuencia ocasional, por lo que 'sometimes' es el adverbio adecuado."
+        },
+        {
+            type: 'mc',
+            question: "I don't play tennis at all. I ___ play tennis.",
+            options: ["often", "never", "sometimes"],
+            correct: 1,
+            explanation: "'At all' indica frecuencia cero, por lo que 'never' es el adverbio correcto."
+        },
+        {
+            type: 'mc',
+            question: "Make it negative. I play tennis.",
+            options: ["I don't play tennis.", "I not play tennis.", "I am not play tennis."],
+            correct: 0,
+            explanation: "La negación en presente simple para 'I' es 'I don't' + verbo base."
+        },
+        {
+            type: 'write',
+            question: "Escribe la respuesta negativa correcta para: 'I play tennis.' (Usa la contracción)",
+            answers: ["i don't play tennis", "i do not play tennis"],
+            hint: "Recuerda usar 'don't'.",
+            explanation: "La forma correcta es 'I don't play tennis.' o 'I do not play tennis.'"
+        },
+        {
+            type: 'write',
+            question: "Completa: 'What's your favorite hobby?' - 'My favorite hobby is...'",
+            answers: ["my favorite hobby is"],
+            hint: "Escribe 'My favorite hobby is' seguido de tu pasatiempo.",
+            isOpenEnded: true,
+            explanation: "La estructura correcta comienza con 'My favorite hobby is...' seguido de la actividad."
+        }
+    ];
+
+    // Estado del juego
+    let currentIndex = 0;
+    let score = 0;
+    let wildcardUsed = false;
+    let canAnswer = true;
+    let playerName = "Jugador";
+    let userAnswers = [];
+    let selectedOptionIndex = null;
+    let answerConfirmed = false;
+
+    // Elementos del DOM
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const textInputArea = document.getElementById('textInputArea');
+    const textInput = document.getElementById('textInput');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressFill = document.getElementById('progressFill');
+    const wildcardBtn = document.getElementById('wildcardBtn');
+    const finalScore = document.getElementById('finalScore');
+    const resultMessage = document.getElementById('resultMessage');
+    const playerGreeting = document.getElementById('playerGreeting');
+    const captureName = document.getElementById('captureName');
+    const captureScore = document.getElementById('captureScore');
+    const reviewSection = document.getElementById('reviewSection');
+    const reviewList = document.getElementById('reviewList');
+    const resultMain = document.getElementById('resultMain');
+    const captureArea = document.getElementById('captureArea');
+    const actionButtons = document.getElementById('actionButtons');
+
+    // 2. Generar partículas de fondo
+    function createParticles() {
+        const container = document.getElementById('particles');
+        const icons = ['❤️', '💖', '💕', '✨', '⭐', '🎯', '💫'];
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = icons[Math.floor(Math.random() * icons.length)];
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.fontSize = (Math.random() * 20 + 15) + 'px';
+            container.appendChild(p);
+        }
+    }
+    createParticles();
+
+    // 3. Cambiar de pantalla
+    function showScreen(screen) {
+        welcomeScreen.classList.remove('active');
+        quizScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        screen.classList.add('active');
+    }
+
+    // 4. Iniciar el test
+    function startQuiz() {
+        const nameInput = document.getElementById('playerNameInput');
+        const name = nameInput.value.trim();
+        playerName = name || "Jugador";
+        
+        currentIndex = 0;
+        score = 0;
+        wildcardUsed = false;
+        userAnswers = [];
+        
+        showScreen(quizScreen);
+        loadQuestion();
+    }
+
+    // 5. Cargar pregunta
+    function loadQuestion() {
+        canAnswer = true;
+        answerConfirmed = false;
+        selectedOptionIndex = null;
+        const q = questions[currentIndex];
+        
+        progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
+        questionText.textContent = q.question;
+        optionsContainer.innerHTML = '';
+        textInputArea.classList.add('hidden');
+        nextBtn.classList.remove('show');
+        nextBtn.textContent = 'Continuar ➡';
+        nextBtn.onclick = confirmAnswer;
+
+        if (q.type === 'mc') {
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(btn, index);
+                optionsContainer.appendChild(btn);
+            });
+        } else {
+            textInputArea.classList.remove('hidden');
+            textInput.value = '';
+            textInput.placeholder = q.hint || 'Escribe aquí...';
+            textInput.classList.remove('locked', 'correct-input', 'wrong-input');
+            textInput.disabled = false;
+            textInput.focus();
+            nextBtn.classList.add('show');
+        }
+        
+        wildcardBtn.disabled = wildcardUsed || q.type !== 'mc';
+    }
+
+    // 6. Seleccionar opción
+    function selectOption(btn, index) {
+        if (answerConfirmed) return;
+        
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedOptionIndex = index;
+        
+        nextBtn.classList.add('show');
+    }
+
+    // 7. Confirmar respuesta
+    function confirmAnswer() {
+        if (answerConfirmed) {
+            nextQuestion();
+            return;
+        }
+
+        const q = questions[currentIndex];
+        
+        if (q.type === 'mc') {
+            if (selectedOptionIndex === null) {
+                optionsContainer.style.animation = 'shake 0.5s';
+                setTimeout(() => optionsContainer.style.animation = '', 500);
+                return;
+            }
+            
+            answerConfirmed = true;
+            const isCorrect = selectedOptionIndex === q.correct;
+            
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.add('locked'));
+            
+            const selectedBtn = optionsContainer.children[selectedOptionIndex];
+            selectedBtn.classList.remove('selected');
+            
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                score++;
+            } else {
+                selectedBtn.classList.add('wrong');
+                optionsContainer.children[q.correct].classList.add('correct');
+            }
+
+            userAnswers.push({
+                question: q.question,
+                userAnswer: q.options[selectedOptionIndex],
+                correctAnswer: q.options[q.correct],
+                isCorrect: isCorrect,
+                explanation: q.explanation
+            });
+
+        } else {
+            const userAnswer = textInput.value.trim();
+            if (!userAnswer) {
+                textInput.style.animation = 'shake 0.5s';
+                setTimeout(() => textInput.style.animation = '', 500);
+                return;
+            }
+
+            answerConfirmed = true;
+            let isCorrect = false;
+            const lowerAnswer = userAnswer.toLowerCase();
+
+            if (q.isOpenEnded) {
+                isCorrect = lowerAnswer.startsWith(q.answers[0]);
+            } else {
+                isCorrect = q.answers.some(ans => lowerAnswer === ans.toLowerCase());
+            }
+
+            textInput.disabled = true;
+            textInput.classList.add('locked');
+            
+            if (isCorrect) {
+                score++;
+                textInput.classList.add('correct-input');
+                triggerHeartConfetti();
+            } else {
+                textInput.classList.add('wrong-input');
+            }
+
+            userAnswers.push({
+                question: q.question,
+                userAnswer: userAnswer || "(vacío)",
+                correctAnswer: q.isOpenEnded ? "My favorite hobby is..." : q.answers[0],
+                isCorrect: isCorrect,
+                explanation: q.explanation
+            });
+        }
+
+        nextBtn.textContent = 'Siguiente ➡';
+        progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+        wildcardBtn.disabled = true;
+    }
+
+    // 8. Siguiente pregunta
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    // 9. Comodín
+    function useWildcard() {
+        if (wildcardUsed || questions[currentIndex].type !== 'mc' || !canAnswer || answerConfirmed) return;
+        
+        const q = questions[currentIndex];
+        const options = optionsContainer.children;
+        const wrongIndices = [];
+        
+        q.options.forEach((_, idx) => {
+            if (idx !== q.correct && !options[idx].classList.contains('eliminated')) {
+                wrongIndices.push(idx);
+            }
+        });
+
+        if (wrongIndices.length > 0) {
+            const randomIdx = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+            options[randomIdx].classList.add('eliminated');
+            if (selectedOptionIndex === randomIdx) {
+                options[randomIdx].classList.remove('selected');
+                selectedOptionIndex = null;
+            }
+            wildcardUsed = true;
+            wildcardBtn.disabled = true;
+            wildcardBtn.textContent = '❤️ Usado';
+        }
+    }
+
+    // 10. Confeti
+    function triggerHeartConfetti() {
+        for (let i = 0; i < 15; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.textContent = ['❤️', '💖', '💕', '🎉'][Math.floor(Math.random() * 4)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = '-50px';
+            heart.style.animationDuration = (Math.random() * 2 + 1) + 's';
+            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 3000);
+        }
+    }
+
+    // 11. Resultados
+    function showResults() {
+        showScreen(resultScreen);
+        progressFill.style.width = '100%';
+        
+        // Asegurar que todo esté visible al mostrar resultados
+        resultMain.classList.remove('hidden');
+        captureArea.classList.remove('hidden');
+        actionButtons.classList.remove('hidden');
+        reviewSection.classList.add('hidden');
+        
+        // Eliminar botón de volver si existe
+        const existingBackBtn = document.getElementById('backToResultsBtn');
+        if (existingBackBtn) existingBackBtn.remove();
+        
+        const total = questions.length;
+        finalScore.innerHTML = `${score}<span>/${total}</span>`;
+        captureScore.textContent = `${score}/${total}`;
+        captureName.textContent = playerName;
+        playerGreeting.textContent = `${playerName}, este es tu resultado:`;
+        
+        const percentage = (score / total) * 100;
+        let msg = "¡Sigue practicando!";
+        if (percentage === 100) msg = "¡PERFECTO! Eres un crack 🏆";
+        else if (percentage >= 80) msg = "¡Excelente trabajo! 🎉";
+        else if (percentage >= 50) msg = "¡Buen trabajo! 👍";
+        
+        resultMessage.textContent = msg;
+        
+        // Construir revisión
+        reviewList.innerHTML = '';
+        userAnswers.forEach((ans, idx) => {
+            const div = document.createElement('div');
+            div.className = `review-item ${ans.isCorrect ? 'correct' : 'wrong'}`;
+            div.innerHTML = `
+                <div class="review-question">${idx + 1}. ${ans.question}</div>
+                <div class="review-answer user-answer">Tu respuesta: ${ans.userAnswer}</div>
+                ${!ans.isCorrect ? `<div class="review-answer correct-answer">Respuesta correcta: ${ans.correctAnswer}</div>` : ''}
+                ${ans.explanation ? `<div class="review-answer explanation">💡 ${ans.explanation}</div>` : ''}
+            `;
+            reviewList.appendChild(div);
+        });
+        
+        localStorage.setItem('corazonesCrewLastScore', JSON.stringify({ 
+            name: playerName, score, total, date: new Date().toISOString() 
+        }));
+    }
+
+    // 12. Toggle revisión (oculta/muestra bloques)
+    function toggleReview() {
+        if (reviewSection.classList.contains('hidden')) {
+            // Mostrar revisión, ocultar el resto
+            reviewSection.classList.remove('hidden');
+            resultMain.classList.add('hidden');
+            captureArea.classList.add('hidden');
+            actionButtons.classList.add('hidden');
+            
+            // Agregar botón de volver si no existe
+            if (!document.getElementById('backToResultsBtn')) {
+                const backBtn = document.createElement('button');
+                backBtn.id = 'backToResultsBtn';
+                backBtn.className = 'btn-action btn-restart';
+                backBtn.textContent = '← Volver al Resultado';
+                backBtn.style.marginTop = '20px';
+                backBtn.style.display = 'block';
+                backBtn.style.marginLeft = 'auto';
+                backBtn.style.marginRight = 'auto';
+                backBtn.onclick = toggleReview;
+                reviewSection.appendChild(backBtn);
+            }
+            
+            reviewSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Ocultar revisión, mostrar el resto
+            reviewSection.classList.add('hidden');
+            resultMain.classList.remove('hidden');
+            captureArea.classList.remove('hidden');
+            actionButtons.classList.remove('hidden');
+            
+            // Eliminar botón de volver
+            const backBtn = document.getElementById('backToResultsBtn');
+            if (backBtn) backBtn.remove();
+        }
+    }
+
+    // 13. Descargar imagen
+    function downloadImage() {
+        html2canvas(captureArea, {
+            backgroundColor: '#1e1e2f',
+            scale: 2,
+            useCORS: true
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `corazones-crew-${playerName}-${score}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+
+    // 14. Reiniciar
+    function restartQuiz() {
+        // Eliminar botón de volver si existe
+        const backBtn = document.getElementById('backToResultsBtn');
+        if (backBtn) backBtn.remove();
+        
+        reviewSection.classList.add('hidden');
+        resultMain.classList.remove('hidden');
+        captureArea.classList.remove('hidden');
+        actionButtons.classList.remove('hidden');
+        
+        showScreen(welcomeScreen);
+        document.getElementById('playerNameInput').value = playerName;
+    }
+
+    // 15. Salir
+    function exitQuiz() {
+        if (confirm('¿Seguro que quieres salir? Perderás tu progreso actual.')) {
+            restartQuiz();
+        }
+    }
+
+    // Iniciar
+    document.getElementById('playerNameInput').focus();
+</script>
+</body>
+</html>
