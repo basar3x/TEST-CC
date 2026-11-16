@@ -1,826 +1,276 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hearts Crew - English Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        
-        body {
-            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a4a 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            padding: 20px;
-            color: white;
-            position: relative;
-        }
-
-        /* Fondo animado con partículas */
-        .bg-particles {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        .particle {
-            position: absolute;
-            font-size: 1.5rem;
-            opacity: 0.08;
-            animation: floatParticle 15s infinite linear;
-        }
-        @keyframes floatParticle {
-            0% { transform: translateY(100vh) rotate(0deg); }
-            100% { transform: translateY(-100vh) rotate(360deg); }
-        }
-
-        /* Logo Hearts Crew */
-        .crew-badge {
-            position: fixed;
-            top: 20px; left: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: #ff6b81;
-            border: 1px solid rgba(255, 107, 129, 0.3);
-            display: flex; align-items: center; gap: 8px;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        /* Botón de salir */
-        .exit-btn {
-            position: fixed;
-            top: 20px; right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            z-index: 100;
-            transition: all 0.3s;
-        }
-        .exit-btn:hover { background: rgba(255, 100, 100, 0.3); border-color: #ff6b81; }
-
-        /* Contenedor principal */
-        .quiz-container {
-            background: rgba(30, 30, 50, 0.85);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 40px;
-            width: 100%;
-            max-width: 720px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            position: relative;
-            z-index: 10;
-            animation: fadeIn 0.5s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .quiz-container::-webkit-scrollbar { width: 6px; }
-        .quiz-container::-webkit-scrollbar-thumb { background: #ff6b81; border-radius: 10px; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        /* Pantallas */
-        .screen { display: none; }
-        .screen.active { display: block; }
-
-        /* Bienvenida */
-        .welcome-title { font-size: 2.8rem; font-weight: 800; margin-bottom: 30px; color: #ff6b81; letter-spacing: -1px; }
-        .name-input {
-            padding: 18px 25px;
-            border-radius: 50px;
-            border: 2px solid rgba(255,255,255,0.15);
-            background: rgba(0,0,0,0.2);
-            color: white;
-            font-size: 1.2rem;
-            text-align: center;
-            outline: none;
-            width: 80%;
-            max-width: 350px;
-            margin-bottom: 20px;
-            transition: border 0.3s;
-        }
-        .name-input:focus { border-color: #ff6b81; }
-        .name-input::placeholder { color: rgba(255,255,255,0.4); }
-        .start-btn {
-            padding: 18px 60px;
-            background: linear-gradient(135deg, #ff6b81, #ff4757);
-            border: none;
-            border-radius: 50px;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 8px 25px rgba(255, 107, 129, 0.4);
-        }
-        .start-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 35px rgba(255, 107, 129, 0.6); }
-
-        /* Barra de progreso y comodín */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .progress-container { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-right: 15px; }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6b81, #ff4757); border-radius: 10px; transition: width 0.4s ease; }
-        
-        .wildcard-btn {
-            background: rgba(255, 107, 129, 0.2);
-            border: 1px solid #ff6b81;
-            color: #ff6b81;
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        .wildcard-btn:hover:not(:disabled) { background: #ff6b81; color: white; transform: scale(1.05); }
-        .wildcard-btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
-
-        .question-text {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 30px;
-            min-height: 3rem;
-            line-height: 1.5;
-            white-space: pre-line; /* Permite saltos de línea naturales */
-        }
-
-        .options-grid { display: flex; flex-direction: column; gap: 15px; perspective: 1000px; }
-
-        .option-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 18px;
-            border-radius: 15px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            animation: float 4s ease-in-out infinite;
-            text-align: left;
-            padding-left: 30px;
-        }
-        .option-btn:nth-child(1) { animation-delay: 0s; }
-        .option-btn:nth-child(2) { animation-delay: 0.4s; }
-        .option-btn:nth-child(3) { animation-delay: 0.8s; }
-
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-        .option-btn:hover:not(.disabled):not(.locked) {
-            background: rgba(255, 255, 255, 0.18);
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            border-color: #ff6b81;
-        }
-
-        .option-btn.selected {
-            background: rgba(255, 107, 129, 0.3) !important;
-            border-color: #ff6b81 !important;
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(255, 107, 129, 0.5);
-        }
-        .option-btn.locked { pointer-events: none; }
-        .option-btn.correct { background: #2ecc71 !important; color: white; border-color: #2ecc71; box-shadow: 0 0 20px #2ecc71; animation: pop 0.4s ease; }
-        .option-btn.wrong { background: #e74c3c !important; color: white; border-color: #e74c3c; animation: shake 0.5s ease; }
-        .option-btn.eliminated { opacity: 0.2; pointer-events: none; text-decoration: line-through; filter: grayscale(1); }
-
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
-
-        /* Input de texto */
-        .text-input-area { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .text-input {
-            padding: 18px;
-            border-radius: 15px;
-            border: 2px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.2);
-            color: white;
-            font-size: 1.1rem;
-            outline: none;
-            transition: border 0.3s;
-        }
-        .text-input:focus { border-color: #ff6b81; background: rgba(0,0,0,0.4); }
-        .text-input::placeholder { color: rgba(255,255,255,0.4); }
-        .text-input.locked { pointer-events: none; }
-        .text-input.correct-input { border-color: #2ecc71 !important; box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
-        .text-input.wrong-input { border-color: #e74c3c !important; box-shadow: 0 0 15px rgba(231, 76, 60, 0.5); }
-
-        .next-btn {
-            margin-top: 25px; padding: 15px 40px; background: #ff6b81; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 800; color: white; cursor: pointer; opacity: 0; transform: translateY(20px); transition: all 0.3s; pointer-events: none; box-shadow: 0 5px 15px rgba(255, 107, 129, 0.4);
-        }
-        .next-btn.show { opacity: 1; transform: translateY(0); pointer-events: all; }
-        .next-btn:hover { transform: scale(1.05); background: #ff4757; }
-
-        /* Resultados */
-        .result-screen h2 { font-size: 2rem; margin-bottom: 10px; color: #ff6b81; }
-        .score-display { font-size: 4rem; font-weight: 800; margin: 20px 0; text-shadow: 0 0 30px rgba(255, 107, 129, 0.5); }
-        .score-display span { font-size: 1.5rem; opacity: 0.7; }
-        .result-message { font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-bottom: 20px; }
-        
-        .action-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 25px; flex-wrap: wrap; }
-        .btn-action { padding: 14px 28px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
-        .btn-action:hover { transform: scale(1.05); }
-        .btn-download { background: #ffd700; color: #333; }
-        .btn-review { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
-        .btn-restart { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
-
-        /* Sección de revisión en Interfaz */
-        .review-section { text-align: left; margin-top: 25px; max-height: 450px; overflow-y: auto; padding-right: 10px; padding-bottom: 20px; }
-        .review-section::-webkit-scrollbar { width: 6px; }
-        .review-section::-webkit-scrollbar-thumb { background: #ff6b81; border-radius: 10px; }
-        .review-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 18px;
-            margin-bottom: 12px;
-            border-left: 4px solid #ff6b81;
-        }
-        .review-item.correct { border-left-color: #2ecc71; }
-        .review-item.wrong { border-left-color: #e74c3c; }
-        .review-question { font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; white-space: pre-line; }
-        .review-answer { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
-        .review-answer.user-answer { color: #ff6b81; }
-        .review-answer.correct-answer { color: #2ecc71; }
-        .review-answer.explanation { color: #ffd700; font-style: italic; margin-top: 6px; }
-
-        .hidden { display: none !important; }
-        
-        /* Contenedor Oculto para la Imagen Exportada */
-        .export-container {
-            position: absolute;
-            left: -9999px; /* Oculto de la vista */
-            top: 0;
-            width: 700px;
-            background: #1e1e2f;
-            padding: 40px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            border-radius: 20px;
-            box-sizing: border-box;
-            z-index: -1;
-        }
-
-        /* Confeti */
-        .heart-particle { position: fixed; font-size: 2rem; pointer-events: none; z-index: 999; animation: fall 2s linear forwards; }
-        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .quiz-container { padding: 25px; }
-            .question-text { font-size: 1.1rem; }
-            .welcome-title { font-size: 2rem; }
-            .score-display { font-size: 3rem; }
-            .btn-action { padding: 12px 18px; font-size: 0.85rem; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hearts Crew – English Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#efeaff;--card:#fff;--tx:#241a45;--mut:#6d628f;--pk:#ff4d6d;--sun:#ffc233;--ok:#17a97a;--bad:#e5484d;--bd:#d9d0f5;--chip:#f5f1ff;--sky:#4aa8ff;--lg:#b30000;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1433;--card:#2a2250;--tx:#f6f2ff;--mut:#b4a9dc;--bd:#43388a;--chip:#352b66;--lg:#ff5a74}}
+:root[data-theme="dark"]{--bg:#1a1433;--card:#2a2250;--tx:#f6f2ff;--mut:#b4a9dc;--bd:#43388a;--chip:#352b66;--lg:#ff5a74}
+*{box-sizing:border-box;margin:0;font-family:'Nunito',system-ui,sans-serif}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--tx);display:flex;justify-content:center;padding:14px;overflow-x:hidden}
+.bgp{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bgp i{position:absolute;bottom:-60px;opacity:.13;animation:up linear infinite}
+@keyframes up{to{transform:translateY(-120vh) rotate(300deg)}}
+#app{width:100%;max-width:640px;position:relative;z-index:1}
+h1,.q,.go,.big{font-family:'Baloo 2',sans-serif}
+.ic{vertical-align:middle;flex:none}
+.hud{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:10px;font-weight:800;flex-wrap:wrap}
+.hud>span,.hud>button{background:var(--card);border:2px solid var(--bd);border-radius:99px;padding:4px 10px;font-size:.88rem;display:inline-flex;align-items:center;gap:5px}
+#hl{gap:1px!important}
+.prog{height:10px;background:var(--bd);border-radius:9px;overflow:hidden;margin-bottom:16px}
+.prog i{display:block;height:100%;width:0;background:var(--pk);transition:width .4s}
+.panel{background:var(--card);border:3px solid var(--tx);border-radius:18px;padding:22px;box-shadow:6px 6px 0 var(--tx);transform:rotate(-.6deg);animation:panelIn .4s}
+@keyframes panelIn{from{opacity:0;transform:rotate(-.6deg) translateY(12px)}to{opacity:1;transform:rotate(-.6deg)}}
+.cap{display:inline-block;background:var(--sun);color:#241a45;font-weight:800;font-size:.85rem;padding:3px 10px;border:2px solid #241a45;border-radius:6px;margin-bottom:10px;transform:rotate(-2deg)}
+.q{font-size:1.3rem;line-height:1.35;margin-bottom:8px;font-weight:600}
+.art{display:flex;justify-content:center;margin:2px 0 12px}
+.logo{width:240px;max-width:70%;height:84px;margin:0 auto 8px;background:var(--lg);-webkit-mask-image:var(--m);mask-image:var(--m);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;margin-bottom:14px}.bar i{display:block;height:100%;width:100%;background:var(--sun);transition:width .1s linear}
+.opts{display:flex;flex-direction:column;gap:10px}.opts.row{flex-direction:row;flex-wrap:wrap}
+button{cursor:pointer;color:var(--tx)}
+.opts button,.tk,.mt{background:var(--chip);border:2px solid var(--bd);border-radius:12px;padding:13px 16px;font-size:1.02rem;font-weight:800;text-align:left;transition:transform .15s,border-color .15s}
+.opts button:hover:not(:disabled),.tk:hover,.mt:hover:not(.ok){transform:translateY(-3px);border-color:var(--pk)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.ok{background:var(--ok)!important;color:#fff!important;border-color:var(--ok)!important}
+.bad{background:var(--bad)!important;color:#fff!important;border-color:var(--bad)!important;animation:shk .4s}
+.gone{opacity:.2;text-decoration:line-through;pointer-events:none}
+.sel{border-color:var(--pk)!important;background:var(--pk)!important;color:#fff!important}
+@keyframes shk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mg>div{display:flex;flex-direction:column;gap:10px}
+.mt{width:100%;text-align:center}
+.slot{min-height:58px;border:2px dashed var(--bd);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.ph{color:var(--mut);font-weight:600}
+.tk{padding:9px 14px;text-align:center}
+input.t{width:100%;padding:14px;border-radius:12px;border:2px solid var(--bd);background:var(--chip);color:var(--tx);font-size:1.1rem;font-weight:800;margin-bottom:6px}
+.hint{color:var(--mut);font-size:.88rem;margin-bottom:10px}
+.go{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--pk);color:#fff;border:3px solid #241a45;border-radius:99px;padding:9px 26px;font-size:1.08rem;font-weight:800;box-shadow:0 4px 0 #241a45;margin:12px 4px 0;transition:transform .1s,box-shadow .1s}
+.go:disabled{opacity:.4;cursor:not-allowed}.go:active{transform:translateY(3px);box-shadow:0 1px 0 #241a45}
+.go.alt{background:var(--card);color:var(--tx)}
+.wc{color:var(--pk)!important;border-color:var(--pk)!important}.wc:disabled{opacity:.35}
+.lnk{background:none;border:0;color:var(--mut);font-size:.8rem;text-decoration:underline;margin-top:10px}
+.fb{margin-top:14px;padding:14px;border-radius:12px;border-left:6px solid var(--ok);background:var(--chip);animation:pop .3s}
+.fb.b{border-left-color:var(--bad)}.fb b{display:block;font-family:'Baloo 2';font-size:1.1rem}
+@keyframes pop{from{transform:scale(.95);opacity:0}}
+.big{font-size:2.4rem;font-weight:800;line-height:1.1;margin-bottom:8px}
+.center{text-align:center}.mut{color:var(--mut)}
+.nm{padding:14px 20px;border-radius:99px;border:3px solid var(--tx);background:var(--card);color:var(--tx);font-size:1.1rem;text-align:center;font-weight:800;width:80%;margin:14px 0 4px}
+.rv{text-align:left;margin-top:14px;max-height:260px;overflow-y:auto}
+.rv>div,.rv details div{padding:8px 10px;border-left:5px solid var(--ok);background:var(--chip);border-radius:8px;margin-bottom:8px;font-size:.9rem}.rv .x{border-left-color:var(--bad)}
+.rv summary{cursor:pointer;padding:6px 2px;font-size:.92rem}
+.k{color:var(--ok)}.x .k{color:var(--bad)}
+.tt{width:100%;border-collapse:collapse;font-size:.85rem}.tt th,.tt td{border:1px solid var(--bd);padding:6px 8px;text-align:left}.tt th{background:var(--chip)}
+.pass{color:var(--ok);font-weight:800}.fail{color:var(--bad);font-weight:800}
+.conf{position:fixed;top:-40px;pointer-events:none;z-index:9;animation:fall 2s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{transform:scale(1.05)}}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(10,6,25,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center}.ov img{max-height:68vh;max-width:100%;aspect-ratio:9/16;border-radius:14px;box-shadow:0 0 0 3px #fff}.ov p{color:#d8d0ff}
+.hidden{display:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-
-<!-- Fondo de partículas -->
-<div class="bg-particles" id="particles"></div>
-
-<!-- Logo -->
-<div class="crew-badge">❤️ Hearts Crew</div>
-
-<!-- Botón de salir -->
-<button class="exit-btn" id="exitBtn" onclick="exitQuiz()">✕ Salir</button>
-
-<div class="quiz-container" id="quizContainer">
-
-    <!-- PANTALLA DE BIENVENIDA -->
-    <div class="screen active" id="welcomeScreen">
-        <h1 class="welcome-title">Hearts Crew</h1>
-        <input type="text" class="name-input" id="playerNameInput" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
-        <br>
-        <button class="start-btn" onclick="startQuiz()">Empezar</button>
-    </div>
-
-    <!-- PANTALLA DEL QUIZ -->
-    <div class="screen" id="quizScreen">
-        <div class="top-bar">
-            <div class="progress-container"><div class="progress-fill" id="progressFill"></div></div>
-            <button class="wildcard-btn" id="wildcardBtn" onclick="useWildcard()">❤️ Comodín</button>
-        </div>
-
-        <div class="question-text" id="questionText">Cargando...</div>
-        
-        <div class="options-grid" id="optionsContainer"></div>
-        
-        <div class="text-input-area hidden" id="textInputArea">
-            <input type="text" class="text-input" id="textInput" placeholder="Escribe tu respuesta aquí..." autocomplete="off">
-        </div>
-
-        <button class="next-btn" id="nextBtn" onclick="confirmAnswer()">Continuar ➡</button>
-    </div>
-
-    <!-- PANTALLA DE RESULTADOS -->
-    <div class="screen" id="resultScreen">
-        
-        <!-- Bloque principal de resultados -->
-        <div id="resultMain">
-            <h2>¡Test Completado! 🎉</h2>
-            <div class="score-display" id="finalScore">0<span>/7</span></div>
-            <p class="result-message" id="resultMessage"></p>
-            <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 15px;" id="playerGreeting"></p>
-        </div>
-
-        <!-- Botones de acción -->
-        <div class="action-buttons" id="actionButtons">
-            <button class="btn-action btn-download" onclick="downloadImage()">📸 Guardar Recuerdo</button>
-            <button class="btn-action btn-review" onclick="toggleReview()">📋 Revisar Respuestas</button>
-            <button class="btn-action btn-restart" onclick="restartQuiz()">🔄 Reintentar</button>
-        </div>
-
-        <!-- Sección de revisión visible en la app -->
-        <div id="reviewSection" class="review-section hidden">
-            <h3 style="color: #ff6b81; margin-bottom: 15px; text-align: center;">📋 Revisión de Respuestas</h3>
-            <div id="reviewList"></div>
-        </div>
-    </div>
+<div class="bgp" id="bgp"></div>
+<div id="app">
+ <div id="hud" class="hud hidden"><span id="hl"></span><span id="sc"></span><span id="st"></span><span id="tm"></span><button id="snd" aria-label="Sonido"></button><button class="wc" id="wc"></button></div>
+ <div id="pg" class="prog hidden"><i id="pf"></i></div>
+ <div id="stage"></div>
+ <div id="fb"></div>
 </div>
-
-<!-- CONTENEDOR OCULTO PARA EXPORTAR LA IMAGEN COMPLETA -->
-<div id="exportContainer" class="export-container">
-    <h2 style="text-align: center; color: #ff6b81; font-size: 2.2rem; margin-bottom: 10px;">Hearts Crew</h2>
-    <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1);">
-        <p style="font-size: 1.3rem;">Jugador: <strong id="exportName"></strong></p>
-        <p style="font-size: 1.6rem; color: white;">Puntuación: <strong id="exportScore" style="color: #ffd700;"></strong></p>
-    </div>
-    <div id="exportReviewList" style="text-align: left;"></div>
-</div>
-
 <script>
-    // 1. Banco de preguntas exacto (7 Preguntas)
-    const questions = [
-        {
-            type: 'mc',
-            question: "Make it negative. ❌ They play basketball.",
-            options: ["They don't playing basketball", "They aren't play basketball.", "They don't play basketball."],
-            correct: 2,
-            explanation: "Para negar en presente simple con 'they', usamos 'don't' + verbo base."
-        },
-        {
-            type: 'mc',
-            question: "___ you like playing chess?",
-            options: ["Are", "Do", "Is"],
-            correct: 1,
-            explanation: "Para preguntas en presente simple con 'you', usamos el auxiliar 'Do'."
-        },
-        {
-            type: 'mc',
-            question: "I play tennis every day. I ___ play tennis.",
-            options: ["sometimes", "always", "never"],
-            correct: 1,
-            explanation: "'Every day' indica frecuencia del 100%, por lo que el adverbio correcto es 'always'."
-        },
-        {
-            type: 'mc',
-            question: "I play chess on some weekends. I ___ play chess.",
-            options: ["sometimes", "always", "never"],
-            correct: 0,
-            explanation: "'On some weekends' indica una frecuencia ocasional, por lo que usamos 'sometimes'."
-        },
-        {
-            type: 'mc',
-            question: "I don't play tennis at all. I ___ play tennis.",
-            options: ["often", "never", "sometimes"],
-            correct: 1,
-            explanation: "'At all' indica frecuencia cero, por lo que 'never' es correcto."
-        },
-        {
-            type: 'write',
-            question: "Make it negative. I play tennis.",
-            answers: ["i don't play tennis", "i do not play tennis", "i don't play tennis.", "i do not play tennis."],
-            hint: "Escribe la oración completa usando don't o do not",
-            explanation: "La negación correcta para 'I' es 'I don't play tennis'."
-        },
-        {
-            type: 'write',
-            question: "“What’s your favorite hobby?”\n\nStart with “My favorite hobby is…”\nExample: “My favorite hobby is taking photos.”\nThen write one sentence about a different activity you like, love or hate.",
-            answers: ["my favorite hobby is"],
-            hint: "Ej: My favorite hobby is taking photos. I hate running.",
-            isOpenEnded: true,
-            explanation: "Debías empezar tu respuesta con 'My favorite hobby is...' y añadir una segunda oración sobre otra actividad."
-        }
-    ];
+const $=s=>document.querySelector(s),stage=$('#stage'),fb=$('#fb');
+const LOGO='data:image/png;base64,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';
+document.documentElement.style.setProperty('--m','url('+LOGO+')');const PIN='1234'; // PIN del panel del profe: cámbialo
+// ---------- Iconos SVG (sin emojis) ----------
+const S='stroke="#241a45" stroke-width="3" stroke-linejoin="round"';
+const IC={
+heart:'<path d="M32 56C10 40 6 24 14 16c7-7 15-4 18 3 3-7 11-10 18-3 8 8 4 24-18 40z" fill="#e5174a"/>',
+heartx:'<path d="M32 56C10 40 6 24 14 16c7-7 15-4 18 3 3-7 11-10 18-3 8 8 4 24-18 40z" fill="#b4a9dc" opacity=".6"/>',
+star:`<path d="M32 5l8 18 20 2-15 13 5 19-18-10-18 10 5-19L4 25l20-2z" fill="#ffc233" ${S}/>`,
+fire:'<path d="M32 5c4 12 18 18 18 35 0 12-8 19-18 19S14 52 14 40c0-8 6-12 8-18 4 4 6 6 6 6 2-8 2-15 4-23z" fill="#ff7a2f"/><path d="M32 58c-6 0-10-4-10-9 0-6 6-9 10-16 4 7 10 10 10 16 0 5-4 9-10 9z" fill="#ffc233"/>',
+clock:`<circle cx="32" cy="32" r="24" fill="#fff" ${S}/><path d="M32 17v16l10 6" stroke="#241a45" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+snd:'<path d="M6 24h10l14-11v38L16 40H6z" fill="#8a7fb5"/><path d="M40 22a14 14 0 0 1 0 20M47 14a24 24 0 0 1 0 36" stroke="#8a7fb5" stroke-width="4" fill="none" stroke-linecap="round"/>',
+mute:'<path d="M6 24h10l14-11v38L16 40H6z" fill="#8a7fb5"/><path d="M42 24l16 16M58 24L42 40" stroke="#e5484d" stroke-width="5" stroke-linecap="round"/>',
+talk:'<path d="M8 8h34a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H24l-10 8v-8H8a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z" fill="#4aa8ff"/><path d="M26 28h30a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6h-4v8l-10-8H26a6 6 0 0 1-6-6V34a6 6 0 0 1 6-6z" fill="#ff4d6d"/>',
+camera:'<rect x="5" y="18" width="54" height="36" rx="7" fill="#241a45"/><rect x="22" y="11" width="20" height="10" rx="3" fill="#241a45"/><circle cx="32" cy="36" r="13" fill="#fff"/><circle cx="32" cy="36" r="8" fill="#4aa8ff"/><circle cx="51" cy="26" r="2.5" fill="#ffc233"/>',
+photo:`<rect x="6" y="10" width="52" height="44" rx="6" fill="#fff" ${S}/><circle cx="21" cy="25" r="6" fill="#ffc233"/><path d="M10 50l17-19 11 12 8-8 10 15z" fill="#17a97a"/>`,
+warn:`<path d="M32 6l28 48H4z" fill="#ffc233" ${S}/><rect x="29.5" y="22" width="5" height="17" rx="2.5" fill="#241a45"/><circle cx="32" cy="46" r="3" fill="#241a45"/>`,
+party:'<path d="M6 58l14-38 24 24z" fill="#ff4d6d"/><circle cx="46" cy="14" r="4" fill="#ffc233"/><circle cx="56" cy="30" r="3.5" fill="#4aa8ff"/><circle cx="32" cy="8" r="3" fill="#17a97a"/><path d="M42 26l9-4M30 34l10-14" stroke="#241a45" stroke-width="3" stroke-linecap="round"/>',
+moon:'<path d="M42 6A26 26 0 1 0 58 46 21 21 0 0 1 42 6z" fill="#ffc233"/><path d="M44 14h10l-10 11h10" stroke="#241a45" stroke-width="3.5" fill="none" stroke-linejoin="round"/>',
+no:'<circle cx="32" cy="32" r="24" fill="none" stroke="#e5484d" stroke-width="8"/><path d="M15 49L49 15" stroke="#e5484d" stroke-width="8"/>',
+stop:`<path d="M22 6h20l16 16v20L42 58H22L6 42V22z" fill="#e5484d" ${S}/><rect x="17" y="27" width="30" height="10" rx="3" fill="#fff"/>`,
+alarm:`<circle cx="32" cy="36" r="20" fill="#fff" ${S}/><path d="M32 24v13l9 5" stroke="#241a45" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="14" cy="14" r="8" fill="#ff4d6d"/><circle cx="50" cy="14" r="8" fill="#ff4d6d"/>`,
+shower:'<path d="M8 12h22a16 16 0 0 1 16 16" stroke="#241a45" stroke-width="5" fill="none"/><path d="M36 28h20l-5 9H41z" fill="#241a45"/><path d="M43 43v6M49 43v10M55 43v6M46 53v6M52 57v4" stroke="#4aa8ff" stroke-width="3" stroke-linecap="round"/>',
+trophy:`<path d="M18 6h28v16a14 14 0 0 1-28 0z" fill="#ffc233" ${S}/><path d="M18 10H8c0 11 4 17 12 17M46 10h10c0 11-4 17-12 17" stroke="#241a45" stroke-width="3" fill="none"/><rect x="28" y="34" width="8" height="12" fill="#ffc233" ${S}/><rect x="19" y="46" width="26" height="9" rx="2" fill="#ff4d6d" ${S}/>`,
+bolt:`<path d="M36 4L12 36h16l-4 24 28-34H34z" fill="#ffc233" ${S}/>`,
+cap:'<path d="M32 10L2 24l30 14 30-14z" fill="#241a45"/><path d="M14 33v11c0 4 8 8 18 8s18-4 18-8V33L32 40z" fill="#4aa8ff" stroke="#241a45" stroke-width="3"/><path d="M58 26v18" stroke="#ffc233" stroke-width="3"/>'
+};
+const I=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true">${IC[n]}</svg>`;
+const R=[
+{t:'match',cap:'Phrases for fluency',q:'Une cada frase con su significado.',p:[['Cool!','Great'],['Come on.','Let’s start'],['That’s right.','Correct'],['Hurry up.','Be quick'],['Look out!','Be careful']],e:'Son las frases del Ejercicio 1 de “Phrases for fluency”.',img:'talk'},
+{t:'choice',cap:'Photostory',q:'Ryan shouts: “___, Olivia! You’re very close to the water.”',o:['Come on','Look out','That’s right'],a:1,e:'“Look out!” = ¡Cuidado! Sirve para dar una advertencia.',img:'camera'},
+{t:'choice',cap:'Photostory',q:'What is Olivia’s new hobby?',o:['Taking photos','Playing chess','Making videos'],a:0,e:'Olivia toma fotos de Megan leyendo en lugares raros. Luke es quien quiere hacer videos.',img:'photo'},
+{t:'order',cap:'Functions: warnings',q:'Ordena la advertencia.',w:['Be','careful,','Dan!'],a:'Be careful Dan',e:'Be + adjetivo: “Be careful, Dan!” = ¡Ten cuidado, Dan!',img:'warn'},
+{t:'choice',cap:'WordWise: have',q:'We’re at the park. We’re ___ a good time!',o:['doing','having','making'],a:1,e:'Colocación: have a good time. En continuo: having a good time.',img:'party'},
+{t:'type',cap:'WordWise: have',q:'Megan is tired. “I need to ___ a rest.” (escribe el verbo)',a:['have'],h:'Una palabra: h _ _ e',e:'have a rest = descansar un rato.',img:'moon'},
+{t:'order',cap:'Functions: prohibition',q:'Ordena la prohibición.',w:['Don’t','push','too','hard!'],a:'Don\'t push too hard',e:'Don’t + verbo base para prohibir o avisar.',img:'no'},
+{t:'choice',cap:'Functions: prohibition',q:'¿Cuál frase PROHÍBE algo?',o:['Come on!','Don’t stop, Luke.','Cool!'],a:1,e:'Don’t + verbo = prohibición. (Aquí: “¡No pares!”).',img:'stop'},
+{t:'type',cap:'Phrases for fluency',q:'Be quick! = “___ up!” (escribe la palabra)',a:['hurry','hurry up'],h:'Empieza con H',e:'Hurry up = date prisa.',img:'alarm'},
+{t:'choice',cap:'WordWise: have',q:'Completa: “When do you have a ___?”',o:['shower','fun','problem solving'],a:0,e:'have a shower = ducharse. Otras: have dinner, have a problem, have fun.',img:'shower'}
+];
+let i,score,lives,streak,okc,wild,log,name='Student',locked,timer,left,best=0,totalTime=0,qStart=0,tick,t0g,mute=false,LAST=null,GA='',Q=R,practice=false;
+try{best=+localStorage.getItem('hcq2')||0}catch(e){}
+const praise=['¡Genial!','¡Cool!','¡Eso es!','¡Crack!','¡Perfecto!','¡Increíble!','¡Top!'];
+const shuf=a=>[...a].sort(()=>Math.random()-.5);
+const norm=s=>s.toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z' ]/g,'').replace(/\s+/g,' ').trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+const CA=r=>r.t==='choice'?r.o[r.a]:r.t==='order'?r.w.join(' '):r.t==='type'?r.a[0]:'todas las parejas';
+function sfx(f,d=.12,t='sine'){if(mute)return;try{const c=sfx.c||(sfx.c=new(window.AudioContext||window.webkitAudioContext)()),o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.value=.07;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.stop(c.currentTime+d)}catch(e){}}
+function confetti(){const n=['heart','star','heart','star'];for(let k=0;k<18;k++){const h=document.createElement('div');h.className='conf';h.innerHTML=I(n[k%4],18+Math.random()*18|0);h.style.left=Math.random()*100+'vw';h.style.animationDuration=1+Math.random()*1.5+'s';document.body.appendChild(h);setTimeout(()=>h.remove(),2600)}}
+(function(){const b=$('#bgp'),n=['heart','star','camera','talk'];for(let k=0;k<14;k++){const e=document.createElement('i');e.innerHTML=I(n[k%4],18+Math.random()*22|0);e.style.left=Math.random()*100+'%';e.style.animationDuration=14+Math.random()*14+'s';e.style.animationDelay=-Math.random()*20+'s';b.appendChild(e)}})();
+$('#snd').innerHTML=I('snd',16);$('#snd').onclick=()=>{mute=!mute;$('#snd').innerHTML=I(mute?'mute':'snd',16)};
+function hud(){const l=Math.max(lives,0);$('#hl').innerHTML=I('heart',18).repeat(l)+I('heartx',18).repeat(5-l);$('#sc').innerHTML=I('star',16)+' '+score;$('#st').innerHTML=I('fire',16)+' x'+streak;$('#wc').disabled=wild||locked||!Q[i]||Q[i].t!=='choice';$('#pf').style.width=(i/Q.length*100)+'%'}
+function startTick(){clearInterval(tick);t0g=Date.now();const u=()=>{totalTime=(Date.now()-t0g)/1000;$('#tm').innerHTML=I('clock',16)+' '+fmt(totalTime)};u();tick=setInterval(u,1000)}
 
-    // Estado del juego
-    let currentIndex = 0;
-    let score = 0;
-    let wildcardUsed = false;
-    let canAnswer = true;
-    let playerName = "Jugador";
-    let userAnswers = [];
-    let selectedOptionIndex = null;
-    let answerConfirmed = false;
+function welcome(){
+ clearInterval(tick);['hud','pg'].forEach(x=>$('#'+x).classList.add('hidden'));fb.innerHTML='';
+ stage.innerHTML=`<div class="panel center"><div class="logo pulse" role="img" aria-label="Hearts Crew"></div><div class="cap">Phrase Quest · Think 1 · Unit 1</div><h1 class="big">Hearts Crew</h1><p class="mut">10 retos con las frases de “Olivia’s new hobby”. Tienes 5 corazones. ¡No los pierdas!</p><input class="nm" id="nm" maxlength="20" placeholder="Student name…" autocomplete="off" value="${name==='Student'?'':esc(name)}"><br><button class="go" id="play">¡Jugar!</button>${best?`<p class="mut" style="margin-top:12px">Tu récord: ${best}</p>`:''}<p class="mut" style="margin-top:14px;font-size:.8rem">Cada acierto suma puntos. ¡La velocidad cuenta!</p><button class="lnk" id="tpb">Acceso profe</button></div>`;
+ $('#play').onclick=()=>start();$('#tpb').onclick=gate;$('#nm').onkeydown=e=>{if(e.key==='Enter')start()};
+}
+function start(fix){const v=$('#nm')?$('#nm').value.trim():name;name=v||'Student';if(fix){Q=R.filter((_,k)=>fix.includes(k));practice=true}else{Q=R;practice=false}i=0;score=0;lives=5;streak=0;okc=0;wild=false;log=[];totalTime=0;$('#wc').innerHTML=I('heart',14)+' 50/50';$('#hud').classList.remove('hidden');$('#pg').classList.remove('hidden');sfx(520,.08);startTick();next()}
+function next(){fb.innerHTML='';clearInterval(timer);if(i>=Q.length||lives<=0)return end();locked=false;const r=Q[i];hud();qStart=Date.now();
+ stage.innerHTML=`<div class="panel"><div class="cap">${r.cap}</div><p class="q">${r.q}</p><div class="art">${I(r.img,84)}</div><div id="body"></div></div>`;
+ ({match,choice,order,type}[r.t])(r,$('#body'))}
+function lose(){lives--;streak=0;hud();sfx(170,.3,'sawtooth')}
+function done(ok,r,pre,t){locked=true;clearInterval(timer);const el=Math.round((Date.now()-qStart)/1000);
+ if(ok){score+=100+streak*20+(t||0);streak++;okc++;sfx(660);setTimeout(()=>sfx(880),110);confetti()}else if(!pre)lose();
+ log.push({cap:r.cap,q:r.q,ok,e:r.e,a:GA,c:CA(r),time:el,ix:R.indexOf(r)});i++;hud();
+ fb.innerHTML=`<div class="fb ${ok?'':'b'}"><b>${ok?praise[Math.floor(Math.random()*praise.length)]+' +'+(100+(streak-1)*20+(t||0)):'Casi…'}</b>${r.e}</div><div class="center"><button class="go" id="nx">${lives<=0||i>=Q.length?'Ver resultado':'Siguiente'} ➡</button></div>`;
+ $('#nx').onclick=next;$('#nx').focus()}
 
-    // Elementos del DOM
-    const welcomeScreen = document.getElementById('welcomeScreen');
-    const quizScreen = document.getElementById('quizScreen');
-    const resultScreen = document.getElementById('resultScreen');
-    const questionText = document.getElementById('questionText');
-    const optionsContainer = document.getElementById('optionsContainer');
-    const textInputArea = document.getElementById('textInputArea');
-    const textInput = document.getElementById('textInput');
-    const nextBtn = document.getElementById('nextBtn');
-    const progressFill = document.getElementById('progressFill');
-    const wildcardBtn = document.getElementById('wildcardBtn');
-    const finalScore = document.getElementById('finalScore');
-    const resultMessage = document.getElementById('resultMessage');
-    const playerGreeting = document.getElementById('playerGreeting');
-    const reviewSection = document.getElementById('reviewSection');
-    const reviewList = document.getElementById('reviewList');
-    const resultMain = document.getElementById('resultMain');
-    const actionButtons = document.getElementById('actionButtons');
+function match(r,b){let sel=null,m=0,er=0;
+ const L=shuf(r.p.map((p,k)=>({x:p[0],id:k}))),Rr=shuf(r.p.map((p,k)=>({x:p[1],id:k})));
+ b.innerHTML=`<div class="mg"><div>${L.map(x=>`<button class="mt" data-s="l" data-p="${x.id}">${x.x}</button>`).join('')}</div><div>${Rr.map(x=>`<button class="mt" data-s="r" data-p="${x.id}">${x.x}</button>`).join('')}</div></div>`;
+ b.querySelectorAll('.mt').forEach(t=>t.onclick=()=>{if(locked||t.classList.contains('ok'))return;
+  if(t.dataset.s==='l'){b.querySelectorAll('[data-s=l]').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');sel=t;sfx(500,.05);return}
+  if(!sel)return;
+  if(sel.dataset.p===t.dataset.p){sel.classList.remove('sel');sel.classList.add('ok');t.classList.add('ok');sel=null;sfx(700,.1);if(++m===r.p.length){GA=er?er+' error(es) al unir':'todas bien';done(!er,r,true)}}
+  else{er++;lose();t.classList.add('bad');setTimeout(()=>t.classList.remove('bad'),400);if(lives<=0){GA=m+'/'+r.p.length+' parejas';done(false,r,true)}}})}
 
-    // 2. Generar partículas de fondo
-    function createParticles() {
-        const container = document.getElementById('particles');
-        const icons = ['❤️', '💖', '💕', '✨', '⭐', '🎯', '💫'];
-        for (let i = 0; i < 20; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.textContent = icons[Math.floor(Math.random() * icons.length)];
-            p.style.left = Math.random() * 100 + '%';
-            p.style.animationDuration = (Math.random() * 15 + 10) + 's';
-            p.style.animationDelay = (Math.random() * 10) + 's';
-            p.style.fontSize = (Math.random() * 20 + 15) + 'px';
-            container.appendChild(p);
-        }
-    }
-    createParticles();
+function choice(r,b){left=15;const ord=shuf(r.o.map((_,k)=>k));
+ b.innerHTML=`<div class="bar"><i id="tb"></i></div><div class="opts">${ord.map(k=>`<button data-k="${k}">${r.o[k]}</button>`).join('')}</div>`;
+ const bs=[...b.querySelectorAll('.opts button')];choice.bs=bs;const cb=bs.find(x=>+x.dataset.k===r.a);
+ const fin=k=>{if(locked)return;const ok=k===r.a;GA=k>=0?r.o[k]:'(sin respuesta)';cb.classList.add('ok');if(!ok&&k>=0)bs.find(x=>+x.dataset.k===k).classList.add('bad');bs.forEach(x=>x.disabled=true);done(ok,r,false,ok?Math.round(left)*4:0)};
+ bs.forEach(x=>x.onclick=()=>fin(+x.dataset.k));
+ timer=setInterval(()=>{left-=.1;$('#tb').style.width=Math.max(left,0)/15*100+'%';if(left<=0)fin(-1)},100)}
+$('#wc').onclick=()=>{const r=Q[i];if(wild||locked||!r||r.t!=='choice')return;const w=choice.bs.filter(x=>+x.dataset.k!==r.a&&!x.classList.contains('gone'));if(!w.length)return;w[Math.floor(Math.random()*w.length)].classList.add('gone');wild=true;$('#wc').innerHTML=I('heartx',14)+' usado';hud()};
 
-    // 3. Cambiar de pantalla
-    function showScreen(screen) {
-        welcomeScreen.classList.remove('active');
-        quizScreen.classList.remove('active');
-        resultScreen.classList.remove('active');
-        screen.classList.add('active');
-    }
+function order(r,b){let pool=shuf(r.w),ans=[];
+ const draw=()=>{b.innerHTML=`<div class="slot">${ans.map((w,k)=>`<button class="tk" data-a="${k}">${w}</button>`).join('')||'<span class="ph">Toca las palabras en orden…</span>'}</div><div class="opts row">${pool.map((w,k)=>`<button class="tk" data-p="${k}">${w}</button>`).join('')}</div><button class="go" id="ck" ${pool.length?'disabled':''}>Comprobar ✔</button>`;
+  b.querySelectorAll('[data-p]').forEach(x=>x.onclick=()=>{if(locked)return;ans.push(pool.splice(+x.dataset.p,1)[0]);sfx(520,.05);draw()});
+  b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{if(locked)return;pool.push(ans.splice(+x.dataset.a,1)[0]);draw()});
+  $('#ck').onclick=()=>{if(locked)return;const ok=norm(ans.join(' '))===norm(r.a);GA=ans.join(' ');b.querySelector('.slot').classList.add(ok?'ok':'bad');done(ok,r)}};draw()}
 
-    // 4. Iniciar el test
-    function startQuiz() {
-        const nameInput = document.getElementById('playerNameInput');
-        const name = nameInput.value.trim();
-        playerName = name || "Jugador";
-        
-        currentIndex = 0;
-        score = 0;
-        wildcardUsed = false;
-        userAnswers = [];
-        
-        showScreen(quizScreen);
-        loadQuestion();
-    }
+function type(r,b){b.innerHTML=`<input class="t" id="ti" autocomplete="off" autocapitalize="off" placeholder="Escribe aquí…"><p class="hint">Pista: ${r.h}</p><button class="go" id="ck">Comprobar ✔</button>`;$('#ti').focus();
+ const chk=()=>{if(locked)return;const v=norm($('#ti').value);if(!v){$('#ti').style.animation='shk .4s';setTimeout(()=>$('#ti').style.animation='',400);return}const ok=r.a.includes(v);GA=$('#ti').value.trim();$('#ti').classList.add(ok?'ok':'bad');$('#ti').disabled=true;done(ok,r)};
+ $('#ck').onclick=chk;$('#ti').onkeydown=e=>{if(e.key==='Enter')chk()}}
 
-    // 5. Cargar pregunta
-    function loadQuestion() {
-        canAnswer = true;
-        answerConfirmed = false;
-        selectedOptionIndex = null;
-        const q = questions[currentIndex];
-        
-        progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
-        questionText.textContent = q.question; // Renderiza los saltos de línea automáticamente
-        optionsContainer.innerHTML = '';
-        textInputArea.classList.add('hidden');
-        nextBtn.classList.remove('show');
-        nextBtn.textContent = 'Continuar ➡';
-        nextBtn.onclick = confirmAnswer;
+function end(){clearInterval(tick);$('#hud').classList.add('hidden');$('#pg').classList.add('hidden');const n=Q.length,dead=lives<=0;
+ if(practice){stage.innerHTML=`<div class="panel center"><div class="logo" role="img" aria-label="Hearts Crew"></div><div class="cap">Práctica terminada</div><div class="big">${okc}/${n}</div><p class="mut">${okc===n?'¡Ya dominas esas frases!':'Sigue practicando, ¡vas mejorando!'}</p><button class="go" id="re">Volver al inicio</button></div>`;$('#re').onclick=welcome;if(okc===n)confetti();return}
+ const fails=log.filter(l=>!l.ok).map(l=>l.ix);
+ const rank=okc>=n?['trophy','Hearts Legend']:okc>=8?['star','Photo Star']:okc>=5?['camera','Rising Hobbyist']:['bolt','Keep going, Crew'];
+ LAST={name,okc,n,score,rank,log,time:Math.round(totalTime)};
+ if(score>best){best=score;try{localStorage.setItem('hcq2',best)}catch(e){}}
+ if(okc>=8)confetti();
+ stage.innerHTML=`<div class="panel center"><div class="logo" role="img" aria-label="Hearts Crew"></div><div class="cap">${dead?'Game over':'¡Reto completado!'}</div><div class="big" style="display:flex;gap:10px;justify-content:center;align-items:center">${I(rank[0],52)} ${rank[1]}</div><p>${esc(name)}, tu nota es <b>${okc}/${n}</b> con <b>${I('star',16)} ${score}</b> puntos.</p><p class="mut">${I('clock',16)} Tiempo total: ${fmt(totalTime)}</p><p class="mut" id="sent"></p><p class="mut">Récord: ${best}</p><div class="rv">${log.map(l=>`<div class="${l.ok?'':'x'}"><b class="k">${l.ok?'✓':'✗'}</b> ${l.q}<br>Tu respuesta: <b>${esc(l.a||'')}</b>${l.ok?'':'<br>Correcta: <b>'+esc(l.c)+'</b>'}<br><span class="mut">${l.e}</span></div>`).join('')}</div><button class="go" id="sv">${I('camera',22)} Guardar imagen</button><button class="go" id="sv2" style="background:var(--sun);color:#241a45">Imagen con respuestas y nota</button><br>${fails.length?'<button class="go" id="pr" style="background:var(--ok)">Practicar mis errores</button>':''}<button class="go alt" id="re">Jugar otra vez</button></div>`;
+ $('#re').onclick=welcome;$('#sv').onclick=()=>saveImg(1);$('#sv2').onclick=()=>saveImg(2);if($('#pr'))$('#pr').onclick=()=>start(fails);sendResult()}
 
-        if (q.type === 'mc') {
-            q.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = opt;
-                btn.onclick = () => selectOption(btn, index);
-                optionsContainer.appendChild(btn);
-            });
-        } else {
-            textInputArea.classList.remove('hidden');
-            textInput.value = '';
-            textInput.placeholder = q.hint || 'Escribe aquí...';
-            textInput.classList.remove('locked', 'correct-input', 'wrong-input');
-            textInput.disabled = false;
-            textInput.focus();
-            nextBtn.classList.add('show');
-        }
-        
-        wildcardBtn.disabled = wildcardUsed || q.type !== 'mc';
-    }
+// ---------- Guardar archivos (usa el permiso de descarga si existe) ----------
+async function saveFile(fn,data,type){
+ let d=null;try{d=window.claude&&await claude.use('downloads')}catch(e){}
+ if(d){try{await d.save({filename:fn,data});return true}catch(e){if(e&&e.code==='declined')return false}}
+ try{const u=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type}));const a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);return true}catch(e){return false}}
 
-    // 6. Seleccionar opción
-    function selectOption(btn, index) {
-        if (answerConfirmed) return;
-        
-        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedOptionIndex = index;
-        
-        nextBtn.classList.add('show');
-    }
+// ---------- Tarjetas 9:16 ----------
+const img=src=>new Promise(r=>{const m=new Image();m.onload=()=>r(m);m.onerror=()=>r(null);m.src=src});
+async function icons(){if(!icons.c){icons.c={};await Promise.all(['star','cap','trophy','camera','bolt'].map(async n=>icons.c[n]=await img('data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${IC[n]}</svg>`))))}return icons.c}
+function heart(c,x,y,s){c.beginPath();c.moveTo(x,y+s*.45);c.bezierCurveTo(x-s*1.15,y-s*.15,x-s*.55,y-s*.95,x,y-s*.35);c.bezierCurveTo(x+s*.55,y-s*.95,x+s*1.15,y-s*.15,x,y+s*.45);c.closePath()}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function fit(c,t,max,size,f){let s=size;do{c.font=`800 ${s}px ${f}`;s-=4}while(c.measureText(t).width>max&&s>40)}
+function clip(c,t,m){if(c.measureText(t).width<=m)return t;while(t.length>3&&c.measureText(t+'…').width>m)t=t.slice(0,-1);return t+'…'}
+const dr=(c,m,x,y,s)=>{if(m)c.drawImage(m,x,y,s,s)};
+function base(c,W,H,py,ph){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#1a1433');g.addColorStop(1,'#4a1d6b');c.fillStyle=g;c.fillRect(0,0,W,H);
+ for(let k=0;k<28;k++){c.fillStyle='rgba(255,77,109,.13)';heart(c,(k*397)%W,(k*613)%H,26+(k%4)*16);c.fill()}
+ rr(c,110,py+20,900,ph,56);c.fillStyle='#ff4d6d';c.fill();rr(c,90,py,900,ph,56);c.fillStyle='#fff';c.fill();c.lineWidth=8;c.strokeStyle='#241a45';c.stroke()}
+function row(c,m,txt,y,s){const w=c.measureText(txt).width;dr(c,m,540-w/2-(s+12)/2,y-s*.82,s);c.fillText(txt,540+(s+12)/2,y)}
+async function card(kind){
+ try{await document.fonts.load('800 80px "Baloo 2"');await document.fonts.load('800 40px Nunito')}catch(e){}
+ const [ic,lg]=await Promise.all([icons(),img(LOGO)]);
+ const L=LAST,W=1080,H=1920,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d'),B='"Baloo 2",sans-serif',N='Nunito,sans-serif';
+ c.textAlign='center';
+ if(kind===2){base(c,W,H,70,1760);if(lg)c.drawImage(lg,540-130,110,260,260*lg.height/lg.width);
+  c.fillStyle='#6d628f';c.font=`800 34px ${N}`;row(c,ic.cap,'Student',300,38);
+  c.fillStyle='#ff4d6d';fit(c,L.name,780,86,B);c.fillText(L.name,540,385);
+  c.fillStyle='#241a45';c.font=`800 84px ${B}`;c.fillText(`Nota ${L.okc}/${L.n}`,540,490);
+  c.fillStyle='#6d628f';c.font=`800 36px ${N}`;row(c,ic.star,`${L.score} puntos · ${fmt(L.time)} · ${L.rank[1]}`,550,40);
+  c.fillStyle='#ece6ff';c.fillRect(140,590,800,5);c.textAlign='left';
+  L.log.forEach((l,k)=>{const y=630+k*116;
+   c.fillStyle=l.ok?'#17a97a':'#e5484d';c.font=`800 44px ${B}`;c.fillText(l.ok?'✓':'✗',140,y+34);
+   c.fillStyle='#241a45';c.font=`800 31px ${N}`;c.fillText(clip(c,`${k+1}. ${l.cap}`,720),205,y+18);
+   c.font=`600 29px ${N}`;c.fillStyle=l.ok?'#6d628f':'#e5484d';c.fillText(clip(c,l.ok?(l.a||''):`${l.a||'—'}  →  ${l.c}`,720),205,y+60);
+   c.fillStyle='#f1edff';c.fillRect(140,y+78,800,3)});
+  c.textAlign='center';c.fillStyle='#fff';c.font=`800 38px ${N}`;c.fillText('Hearts Crew · English Quiz',540,1890);return cv}
+ base(c,W,H,210,1500);if(lg)c.drawImage(lg,540-260,270,520,520*lg.height/lg.width);
+ c.fillStyle='#241a45';c.font=`800 92px ${B}`;c.fillText('Hearts Crew',540,560);
+ c.fillStyle='#6d628f';c.font=`800 34px ${N}`;c.fillText('Phrase Quest · Think 1 · Unit 1',540,615);
+ c.fillStyle='#ece6ff';c.fillRect(190,660,700,6);
+ c.fillStyle='#6d628f';c.font=`800 38px ${N}`;row(c,ic.cap,'Student',745,44);
+ c.fillStyle='#ff4d6d';fit(c,L.name,780,120,B);c.fillText(L.name,540,865);
+ c.fillStyle='#241a45';c.font=`800 300px ${B}`;c.fillText(`${L.okc}/${L.n}`,540,1150);
+ c.fillStyle='#6d628f';c.font=`800 50px ${N}`;c.fillText('aciertos',540,1220);
+ L.log.forEach((l,k)=>{const x=540-(L.log.length-1)*39+k*78;heart(c,x,1340,32);if(l.ok){c.fillStyle='#e5174a';c.fill()}else{c.fillStyle='#ece6ff';c.fill();c.lineWidth=4;c.strokeStyle='#b4a9dc';c.stroke()}});
+ rr(c,200,1420,680,112,56);c.fillStyle='#ffc233';c.fill();c.lineWidth=6;c.strokeStyle='#241a45';c.stroke();
+ c.fillStyle='#241a45';c.font=`800 54px ${B}`;row(c,ic[L.rank[0]],L.rank[1],1495,70);
+ c.fillStyle='#6d628f';c.font=`800 44px ${N}`;row(c,ic.star,`${L.score} puntos · ${fmt(L.time)}`,1610,48);
+ c.fillStyle='#ff4d6d';c.font=`800 46px ${B}`;c.fillText('¿Puedes superarme?',540,1675);
+ c.fillStyle='#fff';c.font=`800 40px ${N}`;c.fillText('Hearts Crew · English Quiz',540,1820);
+ c.globalAlpha=.6;c.font=`600 30px ${N}`;c.fillText(new Date().toLocaleDateString('es'),540,1868);return cv}
+async function saveImg(kind){
+ const b=$(kind===2?'#sv2':'#sv'),t0=b.innerHTML;b.disabled=true;b.textContent='Creando imagen…';
+ let cv;try{cv=await card(kind)}catch(e){b.disabled=false;b.innerHTML=t0;return}
+ b.disabled=false;b.innerHTML=t0;
+ const url=cv.toDataURL('image/png'),ov=document.createElement('div');ov.className='ov';
+ ov.innerHTML=`<img src="${url}" alt="Tu resultado de Hearts Crew"><p id="om">Imagen 9:16 lista para guardar o compartir.</p><div><button class="go" id="od">Guardar PNG</button><button class="go alt" id="oc">Cerrar</button></div>`;
+ document.body.appendChild(ov);$('#oc').onclick=()=>ov.remove();
+ $('#od').onclick=async()=>{const bl=await new Promise(r=>cv.toBlob(r,'image/png'));const ok=await saveFile('hearts-crew-'+((LAST.name||'').replace(/[^\w-]/g,'')||'student')+(kind===2?'-respuestas':'')+'.png',bl,'image/png');$('#om').textContent=ok?'Listo. Si no se descargó, mantén pulsada la imagen y elige “Guardar imagen”.':'Guardado cancelado.'}}
 
-    // 7. Confirmar respuesta
-    function confirmAnswer() {
-        if (answerConfirmed) {
-            nextQuestion();
-            return;
-        }
-
-        const q = questions[currentIndex];
-        
-        if (q.type === 'mc') {
-            if (selectedOptionIndex === null) {
-                optionsContainer.style.animation = 'shake 0.5s';
-                setTimeout(() => optionsContainer.style.animation = '', 500);
-                return;
-            }
-            
-            answerConfirmed = true;
-            const isCorrect = selectedOptionIndex === q.correct;
-            
-            document.querySelectorAll('.option-btn').forEach(b => b.classList.add('locked'));
-            
-            const selectedBtn = optionsContainer.children[selectedOptionIndex];
-            selectedBtn.classList.remove('selected');
-            
-            if (isCorrect) {
-                selectedBtn.classList.add('correct');
-                score++;
-            } else {
-                selectedBtn.classList.add('wrong');
-                optionsContainer.children[q.correct].classList.add('correct');
-            }
-
-            userAnswers.push({
-                question: q.question,
-                userAnswer: q.options[selectedOptionIndex],
-                correctAnswer: q.options[q.correct],
-                isCorrect: isCorrect,
-                explanation: q.explanation
-            });
-
-        } else {
-            const userAnswer = textInput.value.trim();
-            if (!userAnswer) {
-                textInput.style.animation = 'shake 0.5s';
-                setTimeout(() => textInput.style.animation = '', 500);
-                return;
-            }
-
-            answerConfirmed = true;
-            let isCorrect = false;
-            const lowerAnswer = userAnswer.toLowerCase().trim();
-
-            if (q.isOpenEnded) {
-                isCorrect = lowerAnswer.startsWith(q.answers[0]);
-            } else {
-                isCorrect = q.answers.some(ans => lowerAnswer === ans);
-            }
-
-            textInput.disabled = true;
-            textInput.classList.add('locked');
-            
-            if (isCorrect) {
-                score++;
-                textInput.classList.add('correct-input');
-                triggerHeartConfetti();
-            } else {
-                textInput.classList.add('wrong-input');
-            }
-
-            userAnswers.push({
-                question: q.question,
-                userAnswer: userAnswer || "(vacío)",
-                correctAnswer: q.isOpenEnded ? "La oración debe empezar con: 'My favorite hobby is...'" : q.answers[0],
-                isCorrect: isCorrect,
-                explanation: q.explanation
-            });
-        }
-
-        nextBtn.textContent = 'Siguiente ➡';
-        progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
-        wildcardBtn.disabled = true;
-    }
-
-    // 8. Siguiente pregunta
-    function nextQuestion() {
-        currentIndex++;
-        if (currentIndex < questions.length) {
-            loadQuestion();
-        } else {
-            showResults();
-        }
-    }
-
-    // 9. Comodín
-    function useWildcard() {
-        if (wildcardUsed || questions[currentIndex].type !== 'mc' || !canAnswer || answerConfirmed) return;
-        
-        const q = questions[currentIndex];
-        const options = optionsContainer.children;
-        const wrongIndices = [];
-        
-        q.options.forEach((_, idx) => {
-            if (idx !== q.correct && !options[idx].classList.contains('eliminated')) {
-                wrongIndices.push(idx);
-            }
-        });
-
-        if (wrongIndices.length > 0) {
-            const randomIdx = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-            options[randomIdx].classList.add('eliminated');
-            if (selectedOptionIndex === randomIdx) {
-                options[randomIdx].classList.remove('selected');
-                selectedOptionIndex = null;
-            }
-            wildcardUsed = true;
-            wildcardBtn.disabled = true;
-            wildcardBtn.textContent = '❤️ Usado';
-        }
-    }
-
-    // 10. Confeti
-    function triggerHeartConfetti() {
-        for (let i = 0; i < 15; i++) {
-            const heart = document.createElement('div');
-            heart.className = 'heart-particle';
-            heart.textContent = ['❤️', '💖', '💕', '🎉'][Math.floor(Math.random() * 4)];
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.top = '-50px';
-            heart.style.animationDuration = (Math.random() * 2 + 1) + 's';
-            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 3000);
-        }
-    }
-
-    // 11. Resultados
-    function showResults() {
-        showScreen(resultScreen);
-        progressFill.style.width = '100%';
-        
-        resultMain.classList.remove('hidden');
-        actionButtons.classList.remove('hidden');
-        reviewSection.classList.add('hidden');
-        
-        const existingBackBtn = document.getElementById('backToResultsBtn');
-        if (existingBackBtn) existingBackBtn.remove();
-        
-        const total = questions.length;
-        finalScore.innerHTML = `${score}<span>/${total}</span>`;
-        playerGreeting.textContent = `${playerName}, este es tu resultado:`;
-        
-        const percentage = (score / total) * 100;
-        let msg = "¡Sigue practicando!";
-        if (percentage === 100) msg = "¡PERFECTO! Eres un crack 🏆";
-        else if (percentage >= 80) msg = "¡Excelente trabajo! 🎉";
-        else if (percentage >= 50) msg = "¡Buen trabajo! 👍";
-        
-        resultMessage.textContent = msg;
-        
-        // ------------------------------------------------------------
-        // PREPARAR DATOS PARA LA INTERFAZ VISUAL
-        // ------------------------------------------------------------
-        reviewList.innerHTML = '';
-        userAnswers.forEach((ans, idx) => {
-            const div = document.createElement('div');
-            div.className = `review-item ${ans.isCorrect ? 'correct' : 'wrong'}`;
-            div.innerHTML = `
-                <div class="review-question">${idx + 1}. ${ans.question}</div>
-                <div class="review-answer user-answer">Tu respuesta: ${ans.userAnswer}</div>
-                ${!ans.isCorrect ? `<div class="review-answer correct-answer">Respuesta correcta: ${ans.correctAnswer}</div>` : ''}
-                ${ans.explanation ? `<div class="review-answer explanation">💡 ${ans.explanation}</div>` : ''}
-            `;
-            reviewList.appendChild(div);
-        });
-
-        // ------------------------------------------------------------
-        // PREPARAR DATOS PARA EL CONTENEDOR OCULTO (LA IMAGEN)
-        // ------------------------------------------------------------
-        document.getElementById('exportName').textContent = playerName;
-        document.getElementById('exportScore').textContent = `${score}/${total}`;
-        
-        const exportReviewList = document.getElementById('exportReviewList');
-        exportReviewList.innerHTML = ''; // Limpiar data previa
-        
-        userAnswers.forEach((ans, idx) => {
-            const isCorrect = ans.isCorrect;
-            const borderColor = isCorrect ? '#2ecc71' : '#e74c3c';
-            
-            const div = document.createElement('div');
-            div.style.background = 'rgba(255,255,255,0.05)';
-            div.style.borderRadius = '15px';
-            div.style.padding = '15px';
-            div.style.marginBottom = '12px';
-            div.style.borderLeft = `5px solid ${borderColor}`;
-            
-            // Reemplazamos saltos de línea (\n) con <br> para que se vean bien en la exportación
-            const formattedQuestion = ans.question.replace(/\n/g, '<br>');
-
-            div.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 5px; font-size: 1.05rem;">${idx + 1}. ${formattedQuestion}</div>
-                <div style="font-size: 0.95rem; color: #ff6b81; margin-bottom: 2px;"><b>Tu respuesta:</b> ${ans.userAnswer}</div>
-                ${!isCorrect ? `<div style="font-size: 0.95rem; color: #2ecc71; margin-bottom: 2px;"><b>Respuesta correcta:</b> ${ans.correctAnswer}</div>` : ''}
-                ${ans.explanation ? `<div style="font-size: 0.85rem; color: #ffd700; font-style: italic; margin-top: 5px;">💡 ${ans.explanation}</div>` : ''}
-            `;
-            exportReviewList.appendChild(div);
-        });
-        
-        localStorage.setItem('heartsCrewLastScore', JSON.stringify({ 
-            name: playerName, score, total, date: new Date().toISOString() 
-        }));
-    }
-
-    // 12. Toggle revisión en la interfaz
-    function toggleReview() {
-        if (reviewSection.classList.contains('hidden')) {
-            reviewSection.classList.remove('hidden');
-            resultMain.classList.add('hidden');
-            actionButtons.classList.add('hidden');
-            
-            if (!document.getElementById('backToResultsBtn')) {
-                const backBtn = document.createElement('button');
-                backBtn.id = 'backToResultsBtn';
-                backBtn.className = 'btn-action btn-restart';
-                backBtn.textContent = '← Volver al Resultado';
-                backBtn.style.marginTop = '20px';
-                backBtn.style.display = 'block';
-                backBtn.style.marginLeft = 'auto';
-                backBtn.style.marginRight = 'auto';
-                backBtn.onclick = toggleReview;
-                reviewSection.appendChild(backBtn);
-            }
-            reviewSection.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            reviewSection.classList.add('hidden');
-            resultMain.classList.remove('hidden');
-            actionButtons.classList.remove('hidden');
-            
-            const backBtn = document.getElementById('backToResultsBtn');
-            if (backBtn) backBtn.remove();
-        }
-    }
-
-    // 13. Descargar imagen
-    function downloadImage() {
-        const exportContainer = document.getElementById('exportContainer');
-        
-        // Evitar que el scroll corte la imagen
-        window.scrollTo(0,0);
-        
-        html2canvas(exportContainer, {
-            backgroundColor: '#1e1e2f',
-            scale: 2,
-            useCORS: true
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `hearts-crew-${playerName}-${score}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        });
-    }
-
-    // 14. Reiniciar
-    function restartQuiz() {
-        const backBtn = document.getElementById('backToResultsBtn');
-        if (backBtn) backBtn.remove();
-        
-        reviewSection.classList.add('hidden');
-        resultMain.classList.remove('hidden');
-        actionButtons.classList.remove('hidden');
-        
-        showScreen(welcomeScreen);
-        document.getElementById('playerNameInput').value = playerName;
-    }
-
-    // 15. Salir
-    function exitQuiz() {
-        if (confirm('¿Seguro que quieres salir? Perderás tu progreso actual.')) {
-            restartQuiz();
-        }
-    }
-
-    // Iniciar
-    document.getElementById('playerNameInput').focus();
+// ---------- Resultados y panel del profe ----------
+async function sendResult(){
+ const rec={name:LAST.name,okc:LAST.okc,n:LAST.n,score:LAST.score,rank:LAST.rank[1],time:LAST.time,at:Date.now(),ans:LAST.log.map(l=>({cap:l.cap,ok:l.ok,a:l.a||'',c:l.c}))};
+ let saved=0,sent=0;
+ try{const d=JSON.parse(localStorage.getItem('hcq_results')||'[]');d.push(rec);localStorage.setItem('hcq_results',JSON.stringify(d.slice(-300)));saved=1}catch(e){}
+ try{const u=await claude.use('user'),d=await claude.use('db');if(u&&d){const id=await u.id();if(id){await d.collection('results').doc(id).set(rec);sent=1}}}catch(e){}
+ const s=$('#sent');if(s)s.textContent=sent?'Resultado enviado a tu profe.':saved?'Resultado guardado en este dispositivo.':'Guarda la imagen con respuestas y envíasela a tu profe.'}
+async function gate(){
+ let ok=false;try{const u=await claude.use('user');ok=!!(u&&await u.canEdit())}catch(e){}
+ if(ok)return teacher();
+ $('#tpb').outerHTML='<div><input class="nm" id="pin" type="password" placeholder="PIN del profe" autocomplete="off"><br><button class="go" id="pok">Entrar</button></div>';$('#pin').focus();
+ const go=()=>$('#pin').value===PIN?teacher():($('#pin').style.animation='shk .4s',setTimeout(()=>$('#pin').style.animation='',400));
+ $('#pok').onclick=go;$('#pin').onkeydown=e=>{if(e.key==='Enter')go()}}
+async function teacher(){
+ let rows=[];try{rows=JSON.parse(localStorage.getItem('hcq_results')||'[]')}catch(e){}
+ try{const d=await claude.use('db');if(d)(await d.collection('results').get()).docs.forEach(x=>{const r=x.data();if(!rows.some(o=>o.name===r.name&&o.at===r.at))rows.push(r)})}catch(e){}
+ rows.sort((a,b)=>b.okc-a.okc||b.score-a.score);
+ const fd=a=>typeof a==='number'?new Date(a).toLocaleString('es'):(a||'');
+ stage.innerHTML=`<div class="panel"><div class="cap">Panel del profe</div><p class="q">${rows.length} resultado(s)</p><div style="max-height:34vh;overflow:auto"><table class="tt"><tr><th>#</th><th>Student</th><th>Nota</th><th>Puntos</th><th>Tiempo</th></tr>${rows.map((r,k)=>`<tr><td>${k+1}</td><td>${esc(r.name)}</td><td class="${r.okc>=6?'pass':'fail'}">${r.okc}/${r.n}</td><td>${r.score}</td><td>${fmt(r.time||0)}</td></tr>`).join('')||'<tr><td colspan="5" class="mut">Aún no hay resultados.</td></tr>'}</table></div><div class="rv" style="max-height:28vh">${rows.map(r=>`<details><summary><b>${esc(r.name)}</b> · ${r.okc}/${r.n}</summary>${(r.ans||[]).map((a,k)=>`<div class="${a.ok?'':'x'}"><b class="k">${a.ok?'✓':'✗'}</b> ${k+1}. ${esc(a.cap)}: ${esc(a.a)}${a.ok?'':' → '+esc(a.c)}</div>`).join('')}</details>`).join('')}</div><p class="hint" style="margin-top:8px">Se muestran los resultados guardados en este dispositivo y los enviados a tu cuenta.</p><button class="go" id="csv">Descargar CSV</button><button class="go alt" id="del">Borrar datos de este dispositivo</button><button class="go alt" id="bk">Volver</button></div>`;
+ $('#bk').onclick=welcome;
+ $('#del').onclick=function(){if(!this.dataset.s){this.dataset.s=1;this.textContent='¿Seguro? Toca otra vez';return}try{localStorage.removeItem('hcq_results')}catch(e){}teacher()};
+ $('#csv').onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';saveFile('resultados-hearts-crew.csv','\ufeff'+['nombre,nota,puntos,tiempo,rango,fecha',...rows.map(r=>[q(r.name),r.okc+'/'+r.n,r.score,fmt(r.time||0),q(r.rank),q(fd(r.at))].join(','))].join('\n'),'text/csv')}}
+welcome();
 </script>
 </body>
 </html>
